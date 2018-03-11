@@ -42,6 +42,13 @@ class Creator(Ui_MainWindow):
             pol_mode = eval(self.table_pulse_params.item(row, 2).text())
             frequency = eval(self.table_pulse_params.item(row, 3).text())
 
+    #     display param values
+        print(self.tcu_params.num_pulses)
+        print(self.tcu_params.num_repeats)
+        print(self.tcu_params.pri_duty_cycle)
+        print(self.tcu_params.prepulse)
+        print(self.tcu_params.x_amp_delay)
+        print(self.tcu_params.l_amp_delay)
 
     def add_pulse(self):
         print('creating a new PulseParameters')
