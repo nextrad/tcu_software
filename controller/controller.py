@@ -16,7 +16,6 @@
 # ----------------------------------------------------------------------------
 
 import argparse
-import getpass
 import os.path
 import sys
 import time
@@ -30,6 +29,8 @@ num_transfers = int()               # used to calculate M
 num_pulses = int()                  # N
 num_repeats = int()                 # M
 pulses = list()                     # [{pulse1}, {pulse2}, {pulse3}]
+
+# TODO: remove mb_offset param from pulses and make it a single, global value
 
 # pulse dictionary format, 6 parameters per pulse:
 # {"pulse_number": xxx, "mb_offset":xxx, "dig_offset":xxx, "pri_offset":xxx,
