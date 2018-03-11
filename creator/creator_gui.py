@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'creator_gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -103,6 +103,7 @@ class Ui_MainWindow(object):
         spacerItem = QtWidgets.QSpacerItem(118, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout.addItem(spacerItem)
         self.button_export = QtWidgets.QPushButton(self.frame)
+        self.button_export.setEnabled(False)
         self.button_export.setObjectName("button_export")
         self.horizontalLayout.addWidget(self.button_export)
         self.gridLayout.addWidget(self.frame, 2, 1, 1, 1)
