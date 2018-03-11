@@ -31,7 +31,7 @@ class Creator(Ui_MainWindow):
         self.tcu_params.num_pulses = self.spin_num_pulses.value()
         self.tcu_params.num_repeats = self.spin_num_repeats.value()
         self.tcu_params.pri_duty_cycle = self.spin_duty_cycle.value()
-        self.tcu_params.prepulse = self.sping_prepulse.value()
+        self.tcu_params.prepulse = self.spin_prepulse.value()
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
         # retrieve pulse params from table
@@ -41,6 +41,7 @@ class Creator(Ui_MainWindow):
             pri = eval(self.table_pulse_params.item(row, 1).text())
             pol_mode = eval(self.table_pulse_params.item(row, 2).text())
             frequency = eval(self.table_pulse_params.item(row, 3).text())
+
 
     def add_pulse(self):
         print('creating a new PulseParameters')
