@@ -41,14 +41,7 @@ class Creator(Ui_MainWindow):
             pri = eval(self.table_pulse_params.item(row, 1).text())
             pol_mode = eval(self.table_pulse_params.item(row, 2).text())
             frequency = eval(self.table_pulse_params.item(row, 3).text())
-
-    #     display param values
-        print(self.tcu_params.num_pulses)
-        print(self.tcu_params.num_repeats)
-        print(self.tcu_params.pri_duty_cycle)
-        print(self.tcu_params.prepulse)
-        print(self.tcu_params.x_amp_delay)
-        print(self.tcu_params.l_amp_delay)
+        self.tcu_params.export()
 
     def add_pulse(self):
         print('creating a new PulseParameters')
@@ -130,7 +123,27 @@ class TCUParams(object):
 
     def export(self):
         """exports pulse parameters in NeXtRAD.ini format"""
-        pass
+        #     display param values
+        print(self.num_pulses)
+        print(self.num_repeats)
+        print(self.pri_duty_cycle)
+        print(self.prepulse)
+        print(self.x_amp_delay)
+        print(self.l_amp_delay)
+
+        print(self.to_pulses_string())
+
+    def to_pulses_string(self):
+        pulses = str()
+        for index, pulse in enumerate(self.params):
+            pulses += 'pulse_' + str(index) + ' = \''
+            pulses += str(pulse.pulse_width) + ','
+            pulses += str(pulse.pri) + ','
+            pulses += str(pulse.pol_mode) + ','
+            pulses += str(pulse.frequency) + '\''
+            pulses += '\n'
+        return pulses
+
 
     def _int_to_hex_str(self, num, endian='l'):
         """ returns a hexidecimal string in format given an integer
