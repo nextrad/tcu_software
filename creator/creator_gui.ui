@@ -98,20 +98,7 @@ p, li { white-space: pre-wrap; }
        <item row="2" column="0">
         <widget class="QLabel" name="label_10">
          <property name="text">
-          <string>PRI duty cycle [%]</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QSpinBox" name="spin_duty_cycle">
-         <property name="maximum">
-          <number>100</number>
-         </property>
-         <property name="value">
-          <number>50</number>
-         </property>
-         <property name="displayIntegerBase">
-          <number>10</number>
+          <string>Pulse width [μs]</string>
          </property>
         </widget>
        </item>
@@ -163,6 +150,16 @@ p, li { white-space: pre-wrap; }
         <widget class="QLabel" name="label">
          <property name="text">
           <string>Prepulse  [μs]</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QDoubleSpinBox" name="spin_pri_pulse_width">
+         <property name="maximum">
+          <double>999999999.000000000000000</double>
+         </property>
+         <property name="value">
+          <double>500.000000000000000</double>
          </property>
         </widget>
        </item>
@@ -246,12 +243,12 @@ p, li { white-space: pre-wrap; }
        <item row="0" column="0">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Pulse width [μs]</string>
+          <string>RF Pulse width [μs]</string>
          </property>
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QDoubleSpinBox" name="spin_pulse_width">
+        <widget class="QDoubleSpinBox" name="spin_rf_pulse_width">
          <property name="singleStep">
           <double>0.100000000000000</double>
          </property>
