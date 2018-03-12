@@ -2,14 +2,16 @@
 
 # creator.py
 
-# TODO:
-#       initialize default values from tcu_params object
-#       change range of frequency spin box depending on mode setting
-#       add content to the info section, perhaps have help files with html
+# TODO: initialize default values from tcu_params object
+# TODO: change range of frequency spin box depending on mode setting
+# TODO: add content to the info section, perhaps have help files with html
+# TODO: delete/ignore empty rows of table when export()
+# TODO: check rounding of floats when extracting from spinbox
 
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+from prettytable import PrettyTable
 
 from creator_gui import Ui_MainWindow
 
@@ -27,15 +29,16 @@ class Creator(Ui_MainWindow):
         self.spin_num_pulses.valueChanged.connect(self.update_table)
 
     def export(self):
+        # TODO: verify captured datatypes are ints / doubles
+        # TODO: input validation and verification
         # retrieve general params
         self.tcu_params.num_pulses = self.spin_num_pulses.value()
         self.tcu_params.num_repeats = self.spin_num_repeats.value()
-        self.tcu_params.pri_duty_cycle = self.spin_duty_cycle.value()
+        self.tcu_params.pri_pulse_width = self.spin_pri_pulse_width.value()
         self.tcu_params.prepulse = self.spin_prepulse.value()
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
         # retrieve pulse params from table
-        # TODO: verify captured datatypes are ints / doubles....
         for row in range(self.table_pulse_params.rowCount()):
             pulse_width = eval(self.table_pulse_params.item(row, 0).text())
             pri = eval(self.table_pulse_params.item(row, 1).text())
@@ -44,8 +47,7 @@ class Creator(Ui_MainWindow):
         self.tcu_params.export()
 
     def add_pulse(self):
-        print('creating a new PulseParameters')
-        pulse = PulseParameters(pulse_width=self.spin_pulse_width.value(),
+        pulse = PulseParameters(pulse_width=self.spin_rf_pulse_width.value(),
                                 pri=self.spin_pri.value(),
                                 pol_mode=self.combo_mode.currentIndex(),
                                 frequency=self.spin_frequency.value())
@@ -54,9 +56,6 @@ class Creator(Ui_MainWindow):
         # if num added pulses == num_pulses, disabled add button
 
     def remove_pulse(self):
-        # # get selected row, remove corresponding pulse_params from tcu_params.pulse_params list
-        # self.table_pulse_params.removeRow()
-        # self.tcu_params.params.pop() # TODO: getSelectedRow and delete that
         index_list = []
         for model_index in self.table_pulse_params.selectionModel().selectedRows():
             index = QtCore.QPersistentModelIndex(model_index)
@@ -69,7 +68,6 @@ class Creator(Ui_MainWindow):
         self.update_table()
 
     def update_table(self):
-        # self.table_pulse_params.setRowCount(len(self.tcu_params.params))
         self.table_pulse_params.setRowCount(self.spin_num_pulses.value())
         for index, pulse_param in enumerate(self.tcu_params.params):
             self.table_pulse_params.setItem(index, 0, QTableWidgetItem(str(pulse_param.pulse_width)))
@@ -83,17 +81,16 @@ class Creator(Ui_MainWindow):
         else:
             self.button_export.setEnabled(False)
 
-        print(str(len(self.tcu_params.params)) + " vs " + str(self.spin_num_pulses.value()))
         if len(self.tcu_params.params) < self.spin_num_pulses.value():
             self.button_add_pulse.setEnabled(True)
         else:
             self.button_add_pulse.setEnabled(False)
+
         if len(self.tcu_params.params) > 0:
             self.button_remove_pulse.setEnabled(True)
         else:
             self.button_remove_pulse.setEnabled(False)
 
-        print("setting min to : " + str(len(self.tcu_params.params)))
         self.spin_num_pulses.setMinimum(len(self.tcu_params.params))
 
 
@@ -103,49 +100,91 @@ class TCUParams(object):
     def __init__(self, num_pulses=1, num_repeats=1, pri_duty_cycle=50, prepulse=30, x_amp_delay=3.5, l_amp_delay=1.0):
         self.num_pulses = num_pulses
         self.num_repeats = num_repeats
-        self.pri_duty_cycle = pri_duty_cycle
+        self.pri_pulse_width = pri_duty_cycle
         self.prepulse = prepulse
         self.x_amp_delay = x_amp_delay
         self.l_amp_delay = l_amp_delay
         self.params = list()
 
     def __str__(self):
-        params = str()
-        for index, pulse_param in enumerate(self.params):
-            params += "\t[" + str(index) + "] " + str(pulse_param) + "\n"
-        return ("num_pulses : " + str(self.num_pulses) + "\n" +
-                "num_repeats : " + str(self.num_repeats) + "\n" +
-                "pri_duty_cycle : " + str(self.pri_duty_cycle) + "\n" +
-                "prepulse : " + str(self.prepulse) + "\n" +
-                "x_amp_delay : " + str(self.x_amp_delay) + "\n" +
-                "l_amp_delay : " + str(self.l_amp_delay) + "\n" +
-                "pulse_params : \n" + params)
+        ptable_global = PrettyTable()
+        ptable_global.field_names = ['Parameter', 'Value', 'Hex Cycles [big endian]']
+        ptable_global.align['Parameter'] = 'l'
+        ptable_global.add_row(['num_pulses', self.num_pulses, self._int_to_hex_str(self.num_pulses)])
+        ptable_global.add_row(['num_repeats', self.num_repeats, self._int_to_hex_str(self.num_repeats)])
+        ptable_global.add_row(
+            ['pri_duty_cycle', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // 10)])
+        ptable_global.add_row(['prepulse', self.prepulse, self._int_to_hex_str(int(self.prepulse * 1000) // 10)])
+        ptable_global.add_row(
+            ['x_amp_delay', self.x_amp_delay, self._int_to_hex_str(int(self.x_amp_delay * 1000) // 10)])
+        ptable_global.add_row(
+            ['l_amp_delay', self.l_amp_delay, self._int_to_hex_str(int(self.l_amp_delay * 1000) // 10)])
+
+        ptable_pulses = PrettyTable()
+        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
+        for index, pulse in enumerate(self.params):
+            ptable_pulses.add_row([index,
+                                   pulse.pulse_width,
+                                   pulse.pri,
+                                   pulse.pol_mode,
+                                   pulse.frequency])
+
+        return 'Global Params:\n' + str(ptable_global) + '\nPulse Params\n' + str(ptable_pulses)
 
     def export(self):
         """exports pulse parameters in NeXtRAD.ini format"""
-        #     display param values
-        print(self.num_pulses)
-        print(self.num_repeats)
-        print(self.pri_duty_cycle)
-        print(self.prepulse)
-        print(self.x_amp_delay)
-        print(self.l_amp_delay)
-
+        # TODO: use config parser for this
+        print('NUM_PULSES = {}'.format(self.num_pulses))
+        print('NUM_REPEATS = {}'.format(self.num_repeats))
+        print('PRI_PULSE_WIDTH = {}'.format(self.pri_pulse_width))
+        print('PREPULSE_DELAY = {}'.format(self.prepulse))
+        print('X_AMP_DELAY = {}'.format(self.x_amp_delay))
+        print('L_AMP_DELAY = {}'.format(self.l_amp_delay))
+        print('; PULSES [<PULSE|PULSE|PULSE...>]')
+        print('; PULSE [<p. width>, <pri>, <mode>, <freq>]')
         print(self.to_pulses_string())
+        print()
+        self.to_vhdl_snippet()
 
     def to_pulses_string(self):
-        pulses = str()
+        pulses = 'PULSES = \"'
         for index, pulse in enumerate(self.params):
-            pulses += 'pulse_' + str(index) + ' = \''
+            # pulses += 'PULSE_' + str(index) + ' = \''
             pulses += str(pulse.pulse_width) + ','
             pulses += str(pulse.pri) + ','
             pulses += str(pulse.pol_mode) + ','
-            pulses += str(pulse.frequency) + '\''
-            pulses += '\n'
+            pulses += str(pulse.frequency)
+            if index < len(self.params) -1:
+                pulses += '|'
+        pulses += '\"'
         return pulses
 
+    def to_vhdl_snippet(self):
+        print('-'*100)
+        print('-- copy this into HDL')
+        print('-'*100)
+        print('num_pulses_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_pulses), self.num_pulses))
+        print('num_repeats_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_repeats), self.num_repeats))
+        print('pri_pulse_width_reg <= {};\t-- {}'.format(self._int_to_hex_str(int(self.pri_pulse_width*1000)//10), self.pri_pulse_width))
+        print('prepulse_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.prepulse*1000)//10), self.prepulse))
+        print('x_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.x_amp_delay*1000)//10), self.x_amp_delay))
+        print('l_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.l_amp_delay*1000)//10), self.l_amp_delay))
 
-    def _int_to_hex_str(self, num, endian='l'):
+        print('-'*100)
+        print()
+        print()
+        print('-- <p. width>, <pri>, <mode>, <freq>')
+        print()
+        for index, pulse in enumerate(self.params):
+            print('-- pulse ' + str(index))
+            print(self._int_to_hex_str(int(pulse.pulse_width * 1000) // 10) + ', ' +
+                  self._int_to_hex_str(int(pulse.pri * 1000) // 10) + ', ' +
+                  self._int_to_hex_str(int(pulse.pol_mode)) + ', ' +
+                  self._int_to_hex_str(int(pulse.frequency), endian='l') + ', ')
+        print('\nothers => \"ffff\";')
+        print('-' * 100)
+
+    def _int_to_hex_str(self, num, endian='b'):
         """ returns a hexidecimal string in format given an integer
             endianess:
                 default is LITTLE endian
@@ -169,13 +208,10 @@ class TCUParams(object):
             else:
                 byte_list.append([byte_lower, byte_upper])
             index += 4
-        # rev_byte_list = reversed(byte_list)
-        hex_str = str()
-        # for word in rev_byte_list:
-        # for word in reversed(byte_list):
+        hex_str = 'x\"'
         for word in byte_list:
-            hex_str += '\\x' + word[0] + '\\x' + word[1]
-        return hex_str
+            hex_str += word[0] + word[1]
+        return hex_str + '\"'
 
 
 class PulseParameters(object):
