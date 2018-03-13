@@ -27,6 +27,12 @@ class Creator(Ui_MainWindow):
         self.button_add_pulse.clicked.connect(self.add_pulse)
         self.button_remove_pulse.clicked.connect(self.remove_pulse)
         self.spin_num_pulses.valueChanged.connect(self.update_table)
+        self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
+
+    def select_row(self):
+        print('heya')
+        items = self.table_pulse_params.selectedItems()
+        print(str(items[0].text()))
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
@@ -46,6 +52,7 @@ class Creator(Ui_MainWindow):
             frequency = eval(self.table_pulse_params.item(row, 3).text())
         self.tcu_params.export()
 
+    # TODO: this needs to be fixed, what gets updated first? table or object?
     def add_pulse(self):
         pulse = PulseParameters(pulse_width=self.spin_rf_pulse_width.value(),
                                 pri=self.spin_pri.value(),
@@ -140,8 +147,8 @@ class TCUParams(object):
         print('PREPULSE_DELAY = {}'.format(self.prepulse))
         print('X_AMP_DELAY = {}'.format(self.x_amp_delay))
         print('L_AMP_DELAY = {}'.format(self.l_amp_delay))
-        print('; PULSES [<PULSE|PULSE|PULSE...>]')
-        print('; PULSE [<p. width>, <pri>, <mode>, <freq>]')
+        print('; PULSES = [<PULSE|PULSE|PULSE...>]')
+        print('; PULSE = [<p. width>, <pri>, <mode>, <freq>]')
         print(self.to_pulses_string())
         print()
         self.to_vhdl_snippet()
