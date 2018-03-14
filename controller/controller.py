@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 # tcu_project.py
 # project to communicate with the RHINO-TCU using the HARPOON framework
