@@ -27,12 +27,10 @@ class Creator(Ui_MainWindow):
         self.button_add_pulse.clicked.connect(self.add_pulse)
         self.button_remove_pulse.clicked.connect(self.remove_pulse)
         self.spin_num_pulses.valueChanged.connect(self.update_table)
-        self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
-
-    def select_row(self):
-        print('heya')
-        items = self.table_pulse_params.selectedItems()
-        print(str(items[0].text()))
+    #     self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
+    #
+    # def select_row(self):
+    #     items = self.table_pulse_params.selectedItems()
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
