@@ -30,6 +30,9 @@ num_pulses = int()                  # N
 num_repeats = int()                 # M
 pulses = list()                     # [{pulse1}, {pulse2}, {pulse3}]
 
+CLK_PERIOD_NS = 10
+CLK_FREQUENCY_HZ = 1 / (CLK_PERIOD_NS * pow(10, -9))
+
 # TODO: remove mb_offset param from pulses and make it a single, global value
 
 # pulse dictionary format, 6 parameters per pulse:
@@ -170,9 +173,9 @@ def parse_header():
             frequency = x_band_waveform_freq
             amp_delay = 3510  # 3.51us
 
-        mb_offset = (pre_pulse*1000)//10
-        do_offset = ((pulse_width) - amp_delay)//10
-        pri_offset = ((pri*1000)//10) - mb_offset - do_offset
+        mb_offset = (pre_pulse*1000)//CLK_PERIOD_NS
+        do_offset = ((pulse_width) - amp_delay)//CLK_PERIOD_NS
+        pri_offset = ((pri*1000)//CLK_PERIOD_NS) - mb_offset - do_offset
 
         pulse = {"pulse_number": index, "mb_offset": mb_offset,
                  "dig_offset": do_offset, "pri_offset": pri_offset,
@@ -322,16 +325,16 @@ def verify_registers():
     for pulse_number in range(num_pulses):
 
         mb = read_data_array[((pulse_number*6)+0)]
-        mb = eval("0x"+mb)*10
-        # mb = mb*10
+        mb = eval("0x"+mb)*CLK_PERIOD_NS
+        # mb = mb*CLK_PERIOD_NS
         # print ("MB\t"+str(mb))
-        # table.add_row(["main bang",str(mb*10) + " ns"])
+        # table.add_row(["main bang",str(mb*CLK_PERIOD_NS) + " ns"])
 
         do = read_data_array[((pulse_number*6)+1)]
-        do = eval("0x"+do)*10
-        # do = do*10
+        do = eval("0x"+do)*CLK_PERIOD_NS
+        # do = do*CLK_PERIOD_NS
         # print ("DO\t"+str(do))
-        # table.add_row(["digital offset",str(do*10) + " ns"])
+        # table.add_row(["digital offset",str(do*CLK_PERIOD_NS) + " ns"])
 
 
         freq = read_data_array[((pulse_number*6)+3)]
@@ -342,7 +345,7 @@ def verify_registers():
 
         pri_upper = read_data_array[((pulse_number*6)+2)]
         pri_lower = read_data_array[((pulse_number*6)+5)]
-        pri = eval("0x"+pri_upper+pri_lower)*10
+        pri = eval("0x"+pri_upper+pri_lower)*CLK_PERIOD_NS
         # print ("PRI\t"+str(pri))
         # pri = (pri - mb - do)*10 ??????/
         # pri = pri * 10;
@@ -353,7 +356,8 @@ def verify_registers():
         #  print ("Mode\t"+str(mode))
         # table.add_row(["mode",str(mode)])
 
-        prf_calc = 1/(((mb + do + pri))/1000000000)
+        pri_calc = (mb + do + pri) / 1000000000  # PRI in seconds
+        prf_calc = 1 / pri_calc  # PRF in Hertz
 
         logger.debug('{}\t\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}'.format(str(pulse_number+1), str(mb), str(do), str(freq), str(pri), str(mode), str(prf_calc)))
         # table.add_row([str(pulse_number+1), str(mb), str(do), str(freq), str(pri), str(mode)])
