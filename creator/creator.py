@@ -38,6 +38,8 @@ class Creator(Ui_MainWindow):
         # TODO: verify captured datatypes are ints / doubles
         # TODO: input validation and verification
         # retrieve general params
+        self.tcu_params.clk_period_ns = self.spin_clk_period.value()
+        self.tcu_params.num_pulses = self.spin_num_pulses.value()
         self.tcu_params.num_pulses = self.spin_num_pulses.value()
         self.tcu_params.num_repeats = self.spin_num_repeats.value()
         self.tcu_params.pri_pulse_width = self.spin_pri_pulse_width.value()
@@ -104,7 +106,8 @@ class Creator(Ui_MainWindow):
 class TCUParams(object):
     """docstring for TCUPulseParams."""
 
-    def __init__(self, num_pulses=1, num_repeats=1, pri_duty_cycle=50, prepulse=30, x_amp_delay=3.5, l_amp_delay=1.0):
+    def __init__(self, clk_period_ns=10, num_pulses=1, num_repeats=1, pri_duty_cycle=50, prepulse=30, x_amp_delay=3.5, l_amp_delay=1.0):
+        self.clk_period_ns = clk_period_ns
         self.num_pulses = num_pulses
         self.num_repeats = num_repeats
         self.pri_pulse_width = pri_duty_cycle
@@ -120,12 +123,12 @@ class TCUParams(object):
         ptable_global.add_row(['num_pulses', self.num_pulses, self._int_to_hex_str(self.num_pulses)])
         ptable_global.add_row(['num_repeats', self.num_repeats, self._int_to_hex_str(self.num_repeats)])
         ptable_global.add_row(
-            ['pri_duty_cycle', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // 10)])
-        ptable_global.add_row(['prepulse', self.prepulse, self._int_to_hex_str(int(self.prepulse * 1000) // 10)])
+            ['pri_duty_cycle', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // self.clk_period_ns)])
+        ptable_global.add_row(['prepulse', self.prepulse, self._int_to_hex_str(int(self.prepulse * 1000) // self.clk_period_ns)])
         ptable_global.add_row(
-            ['x_amp_delay', self.x_amp_delay, self._int_to_hex_str(int(self.x_amp_delay * 1000) // 10)])
+            ['x_amp_delay', self.x_amp_delay, self._int_to_hex_str(int(self.x_amp_delay * 1000) // self.clk_period_ns)])
         ptable_global.add_row(
-            ['l_amp_delay', self.l_amp_delay, self._int_to_hex_str(int(self.l_amp_delay * 1000) // 10)])
+            ['l_amp_delay', self.l_amp_delay, self._int_to_hex_str(int(self.l_amp_delay * 1000) // self.clk_period_ns)])
 
         ptable_pulses = PrettyTable()
         ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
@@ -167,15 +170,17 @@ class TCUParams(object):
         return pulses
 
     def to_vhdl_snippet(self):
+        print('copy this into HDL:')
+        print()
         print('-'*100)
-        print('-- copy this into HDL')
+        print('-- system clock period : {}ns ({}MHz)'.format(self.clk_period_ns, (1/(self.clk_period_ns * pow(10, -9))/1000000)))
         print('-'*100)
         print('num_pulses_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_pulses), self.num_pulses))
         print('num_repeats_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_repeats), self.num_repeats))
-        print('pri_pulse_width_reg <= {};\t-- {}'.format(self._int_to_hex_str(int(self.pri_pulse_width*1000)//10), self.pri_pulse_width))
-        print('prepulse_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.prepulse*1000)//10), self.prepulse))
-        print('x_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.x_amp_delay*1000)//10), self.x_amp_delay))
-        print('l_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.l_amp_delay*1000)//10), self.l_amp_delay))
+        print('pri_pulse_width_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.pri_pulse_width * 1000 // self.clk_period_ns)), self.pri_pulse_width))
+        print('prepulse_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.prepulse * 1000 // self.clk_period_ns)), self.prepulse))
+        print('x_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.x_amp_delay * 1000 // self.clk_period_ns)), self.x_amp_delay))
+        print('l_amp_delay_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(int(self.l_amp_delay * 1000 // self.clk_period_ns)), self.l_amp_delay))
 
         print('-'*100)
         print()
@@ -184,8 +189,8 @@ class TCUParams(object):
         print()
         for index, pulse in enumerate(self.params):
             print('-- pulse ' + str(index))
-            print(self._int_to_hex_str(int(pulse.pulse_width * 1000) // 10) + ', ' +
-                  self._int_to_hex_str(int(pulse.pri * 1000) // 10) + ', ' +
+            print(self._int_to_hex_str(int(pulse.pulse_width * 1000 // self.clk_period_ns)) + ', ' +
+                  self._int_to_hex_str(int(pulse.pri * 1000 // self.clk_period_ns)) + ', ' +
                   self._int_to_hex_str(int(pulse.pol_mode)) + ', ' +
                   self._int_to_hex_str(int(pulse.frequency), endian='l') + ', ')
         print('\nothers => \"ffff\";')
