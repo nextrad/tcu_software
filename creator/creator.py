@@ -162,7 +162,7 @@ class TCUParams(object):
             pulses += str(pulse.pri) + ','
             pulses += str(pulse.pol_mode) + ','
             pulses += str(pulse.frequency)
-            if index < len(self.params) -1:
+            if index < len(self.params) - 1:
                 pulses += '|'
         pulses += '\"'
         return pulses
