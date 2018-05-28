@@ -8,14 +8,18 @@
 # TODO: delete/ignore empty rows of table when export()
 # TODO: check rounding of floats when extracting from spinbox
 
+import argparse
+import os.path
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
 from prettytable import PrettyTable
 
+
 from creator_gui import Ui_MainWindow
+# import parser
 
-
+# parser.header_file = HeaderFile('aa')
 class Creator(Ui_MainWindow):
     """docstring for TCUPulseParamsGUILogic."""
 
@@ -241,7 +245,30 @@ class PulseParameters(object):
 
 
 if __name__ == '__main__':
+
+    # -------------------------------------------------------------------------
+    # PARSE COMMAND LINE ARGUMENTS
+    # -------------------------------------------------------------------------
+    parser = argparse.ArgumentParser(usage='creator.py [-f FILE]',
+                                     description='Experiment creator for the '
+                                                 'NeXtRAD Timing Control Unit')
+    parser.add_argument('-f', '--file',
+                        help='header file default [./NeXtRAD.ini]',
+                        default='./NeXtRAD.ini')
+    args = parser.parse_args()
+    HEADER_FILE = args.file
+
     tcu_params = TCUParams()
+
+    # check that headfile exists:
+    # check if headerfile exists
+    if os.path.isfile(HEADER_FILE):
+        print('Header file "{}" found, parsing values...'
+              .format(HEADER_FILE))
+        parse_header()
+    else:
+        print('No existing header file "{}" found, loading with preset values.'
+              .format(HEADER_FILE))
 
     app = QtWidgets.QApplication(sys.argv)
 
