@@ -108,11 +108,11 @@ class Creator(Ui_MainWindow):
 class TCUParams(object):
     """docstring for TCUPulseParams."""
 
-    def __init__(self, clk_period_ns=10, num_pulses=1, num_repeats=1, pri_duty_cycle=50, pre_pulse=30, x_amp_delay=3.5, l_amp_delay=1.0, params=list()):
+    def __init__(self, clk_period_ns=10, num_pulses=1, num_repeats=1, pri_pulse_width=50, pre_pulse=30, x_amp_delay=3.5, l_amp_delay=1.0, params=list()):
         self.clk_period_ns = clk_period_ns
         self.num_pulses = num_pulses
         self.num_repeats = num_repeats
-        self.pri_pulse_width = pri_duty_cycle
+        self.pri_pulse_width = pri_pulse_width
         self.pre_pulse = pre_pulse
         self.x_amp_delay = x_amp_delay
         self.l_amp_delay = l_amp_delay
@@ -125,7 +125,7 @@ class TCUParams(object):
         ptable_global.add_row(['num_pulses', self.num_pulses, self._int_to_hex_str(self.num_pulses)])
         ptable_global.add_row(['num_repeats', self.num_repeats, self._int_to_hex_str(self.num_repeats)])
         ptable_global.add_row(
-            ['pri_duty_cycle', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // self.clk_period_ns)])
+            ['pri_pulse_width', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // self.clk_period_ns)])
         ptable_global.add_row(['pre_pulse', self.pre_pulse, self._int_to_hex_str(int(self.pre_pulse * 1000) // self.clk_period_ns)])
         ptable_global.add_row(
             ['x_amp_delay', self.x_amp_delay, self._int_to_hex_str(int(self.x_amp_delay * 1000) // self.clk_period_ns)])
