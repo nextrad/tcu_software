@@ -7,6 +7,7 @@
 # TODO: add content to the info section, perhaps have help files with html
 # TODO: delete/ignore empty rows of table when export()
 # TODO: check rounding of floats when extracting from spinbox
+# TODO: verify pulse_params_reg format (is pri 1x32 or 2x16)
 
 import argparse
 import os.path
