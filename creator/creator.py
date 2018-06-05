@@ -195,7 +195,7 @@ class TCUParams(object):
                   self._int_to_hex_str(int(pulse.pri * 1000 // self.clk_period_ns)) + ', ' +
                   self._int_to_hex_str(int(pulse.pol_mode)) + ', ' +
                   self._int_to_hex_str(int(pulse.frequency), endian='l') + ', ')
-        print('\nothers => x\"ffff\";')
+        print('\nothers => x\"ffff\"')
         print('-' * 100)
 
     def _int_to_hex_str(self, num, endian='b'):
