@@ -9,7 +9,7 @@ class HeaderFileParser(object):
     def __init__(self, file_name = ''):
         self.logger = logging.getLogger('header_file_parser_logger')
         self.file_parser = configparser.ConfigParser()
-
+        self.file_parser.optionxform = str # retain upper case for keys
         self.file_parser['PulseParameters'] = {'WAVEFORM_INDEX': '0',
                                                'NUM_PRIS': '0',
                                                'PRE_PULSE': '0',
@@ -96,8 +96,21 @@ class HeaderFileParser(object):
             exit(65)
         return result
 
+
+    # NOTE: Simply using 'self.file_parser.write(headerfile)' will change the
+    #       existing header's format and remove its comments. This could be
+    #       fixed using configobj module. For now, a temporary ini file is
+    #       generated for the cnc cpp software to parse.
+    def write_header(self, file_name):
+        """ writes tcu params to header file """
+        with open(file_name, 'w') as configfile:
+            configfile.write('# Intermediary ini file for TCU\n')
+            configfile.write('[PulseParameters]\n')
+            for key in self.file_parser['PulseParameters']:
+                configfile.write(key + ' = ' + self.file_parser['PulseParameters'][key]+'\n')
+
     def set_tcu_params(self, params):
-        """ writes tcu params to header file
+        """ sets parser with given parameters
 
             'params' expects a dictionary containing the following items:
 
