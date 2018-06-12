@@ -121,7 +121,6 @@ class HeaderFileParser(object):
                                             'frequency'     ->  float
         """
         # TODO: check that all the required items exist in the params argument
-        # TODO: check that all the required items exist in the params argument
         self.file_parser['PulseParameters']['PULSES'] = '""'
         test = '"'
         for index, pulse in enumerate(params['pulses']):
