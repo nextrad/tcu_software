@@ -18,9 +18,9 @@ from prettytable import PrettyTable
 
 
 from creator_gui import Ui_MainWindow
-# import parser
+from parser import HeaderFileParser
 
-# parser.header_file = HeaderFile('aa')
+
 class Creator(Ui_MainWindow):
     """docstring for TCUPulseParamsGUILogic."""
 
@@ -37,6 +37,16 @@ class Creator(Ui_MainWindow):
     # def select_row(self):
     #     items = self.table_pulse_params.selectedItems()
 
+        # populate fields with existing headerfile data
+        self.spin_clk_period.setProperty("value", self.tcu_params.clk_period_ns)
+        self.spin_num_pulses.setProperty("value", self.tcu_params.num_pulses)
+        self.spin_num_pulses.setProperty("value", self.tcu_params.num_repeats)
+        self.spin_num_repeats.setProperty("value", self.tcu_params.pri_pulse_width)
+        self.spin_pri_pulse_width.setProperty("value", self.tcu_params.pre_pulse)
+        self.spin_prepulse.setProperty("value", self.tcu_params.x_amp_delay)
+        self.spin_x_amp_delay.setProperty("value", self.tcu_params.l_amp_delay)
+        self.spin_l_amp_delay.setProperty("value", self.tcu_params.pulses)
+
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
         # TODO: input validation and verification
@@ -50,6 +60,7 @@ class Creator(Ui_MainWindow):
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
         # retrieve pulse params from table
+        # TODO ...
         for row in range(self.table_pulse_params.rowCount()):
             pulse_width = eval(self.table_pulse_params.item(row, 0).text())
             pri = eval(self.table_pulse_params.item(row, 1).text())
@@ -59,11 +70,15 @@ class Creator(Ui_MainWindow):
 
     # TODO: this needs to be fixed, what gets updated first? table or object?
     def add_pulse(self):
-        pulse = PulseParameters(pulse_width=self.spin_rf_pulse_width.value(),
-                                pri=self.spin_pri.value(),
-                                pol_mode=self.combo_mode.currentIndex(),
-                                frequency=self.spin_frequency.value())
-        self.tcu_params.params.append(pulse)
+        # pulse = PulseParameters(pulse_width=self.spin_rf_pulse_width.value(),
+        #                         pri=self.spin_pri.value(),
+        #                         pol_mode=self.combo_mode.currentIndex(),
+        #                         frequency=self.spin_frequency.value())
+        pulse = {'pulse_width': self.spin_rf_pulse_width.value(),
+                 'pri': self.spin_pri.value(),
+                 'pol_mode': self.combo_mode.currentIndex(),
+                 'frequency': self.spin_frequency.value()}
+        self.tcu_params.pulses.append(pulse)
         self.update_table()
         # if num added pulses == num_pulses, disabled add button
 
@@ -75,49 +90,52 @@ class Creator(Ui_MainWindow):
 
         for index in index_list:
             print(index.row())
-            del self.tcu_params.params[index.row()]
+            del self.tcu_params.pulses[index.row()]
             self.table_pulse_params.removeRow(index.row())
         self.update_table()
 
     def update_table(self):
         self.table_pulse_params.setRowCount(self.spin_num_pulses.value())
-        for index, pulse_param in enumerate(self.tcu_params.params):
-            self.table_pulse_params.setItem(index, 0, QTableWidgetItem(str(pulse_param.pulse_width)))
-            self.table_pulse_params.setItem(index, 1, QTableWidgetItem(str(pulse_param.pri)))
-            self.table_pulse_params.setItem(index, 2, QTableWidgetItem(str(pulse_param.pol_mode)))
-            self.table_pulse_params.setItem(index, 3, QTableWidgetItem(str(pulse_param.frequency)))
+        for index, pulse_param in enumerate(self.tcu_params.pulses):
+            self.table_pulse_params.setItem(index, 0, QTableWidgetItem(str(pulse_param['pulse_width'])))
+            self.table_pulse_params.setItem(index, 1, QTableWidgetItem(str(pulse_param['pri'])))
+            self.table_pulse_params.setItem(index, 2, QTableWidgetItem(str(pulse_param['pol_mode'])))
+            self.table_pulse_params.setItem(index, 3, QTableWidgetItem(str(pulse_param['frequency'])))
 
-        if len(self.tcu_params.params) > 0:
-            self.table_pulse_params.selectRow(len(self.tcu_params.params) - 1)
+        if len(self.tcu_params.pulses) > 0:
+            self.table_pulse_params.selectRow(len(self.tcu_params.pulses) - 1)
             self.button_export.setEnabled(True)
         else:
             self.button_export.setEnabled(False)
 
-        if len(self.tcu_params.params) < self.spin_num_pulses.value():
+        if len(self.tcu_params.pulses) < self.spin_num_pulses.value():
             self.button_add_pulse.setEnabled(True)
         else:
             self.button_add_pulse.setEnabled(False)
 
-        if len(self.tcu_params.params) > 0:
+        if len(self.tcu_params.pulses) > 0:
             self.button_remove_pulse.setEnabled(True)
         else:
             self.button_remove_pulse.setEnabled(False)
 
-        self.spin_num_pulses.setMinimum(len(self.tcu_params.params))
+        self.spin_num_pulses.setMinimum(len(self.tcu_params.pulses))
 
 
 class TCUParams(object):
     """docstring for TCUPulseParams."""
 
-    def __init__(self, clk_period_ns=10, num_pulses=1, num_repeats=1, pri_pulse_width=50, pre_pulse=30, x_amp_delay=3.5, l_amp_delay=1.0, params=list()):
-        self.clk_period_ns = clk_period_ns
-        self.num_pulses = num_pulses
-        self.num_repeats = num_repeats
-        self.pri_pulse_width = pri_pulse_width
-        self.pre_pulse = pre_pulse
-        self.x_amp_delay = x_amp_delay
-        self.l_amp_delay = l_amp_delay
-        self.params = params
+    def __init__(self, headerfile):
+        # clk_period_ns=10, num_pulses=1, num_repeats=1, pri_pulse_width=50, pre_pulse=30, x_amp_delay=3.5, l_amp_delay=1.0, params=list()
+        self.hfparser = HeaderFileParser(headerfile)
+        params = self.hfparser.get_tcu_params()
+        self.clk_period_ns = 10
+        self.num_pulses = params['num_pulses']
+        self.num_repeats = params['num_repeats']
+        self.pri_pulse_width = params['pri_pulse_width']
+        self.pre_pulse = params['pre_pulse']
+        self.x_amp_delay = params['x_amp_delay']
+        self.l_amp_delay = params['l_amp_delay']
+        self.pulses = params['pulses']
 
     def __str__(self):
         ptable_global = PrettyTable()
@@ -135,7 +153,7 @@ class TCUParams(object):
 
         ptable_pulses = PrettyTable()
         ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
-        for index, pulse in enumerate(self.params):
+        for index, pulse in enumerate(self.pulses):
             ptable_pulses.add_row([index,
                                    pulse.pulse_width,
                                    pulse.pri,
@@ -158,16 +176,25 @@ class TCUParams(object):
         print(self.to_pulses_string())
         print()
         self.to_vhdl_snippet()
+        params = {'num_pulses':self.num_pulses,
+                  'num_repeats':self.num_repeats,
+                  'pri_pulse_width':self.pri_pulse_width,
+                  'pre_pulse':self.pre_pulse,
+                  'x_amp_delay':self.x_amp_delay,
+                  'l_amp_delay':self.l_amp_delay,
+                  'pulses':self.pulses}
+        self.hfparser.set_tcu_params(params)
+        self.hfparser.write_header('PulseParameters.ini')
 
     def to_pulses_string(self):
         pulses = 'PULSES = \"'
-        for index, pulse in enumerate(self.params):
+        for index, pulse in enumerate(self.pulses):
             # pulses += 'PULSE_' + str(index) + ' = \''
-            pulses += str(pulse.pulse_width) + ','
-            pulses += str(pulse.pri) + ','
-            pulses += str(pulse.pol_mode) + ','
-            pulses += str(pulse.frequency)
-            if index < len(self.params) - 1:
+            pulses += str(pulse['pulse_width']) + ','
+            pulses += str(pulse['pri']) + ','
+            pulses += str(pulse['pol_mode']) + ','
+            pulses += str(pulse['frequency'])
+            if index < len(self.pulses) - 1:
                 pulses += '|'
         pulses += '\"'
         return pulses
@@ -199,16 +226,16 @@ class TCUParams(object):
         print()
         print('-- <p. width>, <pri>, <mode>, <freq>')
         print()
-        for index, pulse in enumerate(self.params):
+        for index, pulse in enumerate(self.pulses):
             print('-- pulse ' + str(index))
-            pulse_width = self._to_clock_ticks(pulse.pulse_width)
-            pri = self._to_clock_ticks(pulse.pri)
+            pulse_width = self._to_clock_ticks(pulse['pulse_width'])
+            pri = self._to_clock_ticks(pulse['pri'])
             pri_offset = pri - pre_pulse - pulse_width
             print(self._int_to_hex_str(pulse_width) + ', ' +
                   # TODO: 1x32bit or 2x16bit?
                   self._int_to_hex_str(pri_offset) + ', ' +
-                  self._int_to_hex_str(int(pulse.pol_mode)) + ', ' +
-                  self._int_to_hex_str(int(pulse.frequency), endian='l') + ', ')
+                  self._int_to_hex_str(int(pulse['pol_mode'])) + ', ' +
+                  self._int_to_hex_str(int(pulse['frequency']), endian='l') + ', ')
         print('\nothers => x\"ffff\"')
         print('-' * 100)
 
@@ -247,47 +274,31 @@ class TCUParams(object):
         return hex_str + '\"'
 
 
-class PulseParameters(object):
-    """docstring for PulseParameters."""
-
-    def __init__(self, pulse_width, pri, pol_mode, frequency):
-        self.pulse_width = pulse_width
-        self.pri = pri
-        self.pol_mode = pol_mode
-        self.frequency = frequency
-
-    def __str__(self):
-        return ("pulse_width : " + str(self.pulse_width) + ", " +
-                "pri : " + str(self.pri) + ", " +
-                "pol_mode : " + str(self.pol_mode) + ", " +
-                "frequency : " + str(self.frequency))
-
-
 if __name__ == '__main__':
 
     # -------------------------------------------------------------------------
     # PARSE COMMAND LINE ARGUMENTS
     # -------------------------------------------------------------------------
-    parser = argparse.ArgumentParser(usage='creator.py [-f FILE]',
+    clargparser = argparse.ArgumentParser(usage='creator.py [-f FILE]',
                                      description='Experiment creator for the '
                                                  'NeXtRAD Timing Control Unit')
-    parser.add_argument('-f', '--file',
+    clargparser.add_argument('-f', '--file',
                         help='header file default [./NeXtRAD.ini]',
                         default='./NeXtRAD.ini')
-    args = parser.parse_args()
+    args = clargparser.parse_args()
     HEADER_FILE = args.file
 
-    tcu_params = TCUParams()
+    tcu_params = TCUParams(HEADER_FILE)
 
     # check that headfile exists:
     # check if headerfile exists
-    if os.path.isfile(HEADER_FILE):
-        print('Header file "{}" found, parsing values...'
-              .format(HEADER_FILE))
-        parse_header()
-    else:
-        print('No existing header file "{}" found, loading with preset values.'
-              .format(HEADER_FILE))
+    # if os.path.isfile(HEADER_FILE):
+    #     print('Header file "{}" found, parsing values...'
+    #           .format(HEADER_FILE))
+    #     parse_header()
+    # else:
+    #     print('No existing header file "{}" found, loading with preset values.'
+    #           .format(HEADER_FILE))
 
     app = QtWidgets.QApplication(sys.argv)
 
