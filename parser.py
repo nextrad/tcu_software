@@ -18,7 +18,8 @@ class HeaderFileParser(object):
                                                'L_AMP_DELAY': '0',
                                                'DAC_DELAY': '0',
                                                'ADC_DELAY': '0',
-                                               'PULSES': ''}
+                                               'SAMPLES_PER_PRI': '0',
+                                               'PULSES': '""'}
         if file_name != '':
             self.read_header(file_name)
 
@@ -32,6 +33,7 @@ class HeaderFileParser(object):
         params += 'l_amp_delay: ' + str(self.file_parser['PulseParameters']['L_AMP_DELAY']) + '\n'
         params += 'dac_delay: ' + str(self.file_parser['PulseParameters']['DAC_DELAY']) + '\n'
         params += 'adc_delay: ' + str(self.file_parser['PulseParameters']['ADC_DELAY']) + '\n'
+        params += 'samples_per_pri: ' + str(self.file_parser['PulseParameters']['SAMPLES_PER_PRI']) + '\n'
         params += 'pulses: ' + self.file_parser['PulseParameters']['PULSES']
         return params
 
@@ -65,6 +67,7 @@ class HeaderFileParser(object):
                                             'frequency'     ->  float
                 'dac_delay'         ->  int
                 'adc_delay'         ->  int
+                'samples_per_pri'   ->  int
         """
         tcu_params = dict()
         if self.file_parser.has_section('PulseParameters'):
@@ -85,6 +88,7 @@ class HeaderFileParser(object):
             tcu_params['l_amp_delay'] = eval(self._extract_param('L_AMP_DELAY'))
             tcu_params['dac_delay'] = eval(self._extract_param('DAC_DELAY'))
             tcu_params['adc_delay'] = eval(self._extract_param('ADC_DELAY'))
+            tcu_params['samples_per_pri'] = eval(self._extract_param('SAMPLES_PER_PRI'))
             tcu_params['pulses'] = []
             for pulse in pulses_list:
                 pulse_params = pulse.split(',')
@@ -140,6 +144,7 @@ class HeaderFileParser(object):
                                             'frequency'     ->  float
                 'dac_delay'         ->  int
                 'adc_delay'         ->  int
+                'samples_per_pri'   ->  int
         """
         # TODO: check that all the required items exist in the params argument
         self.file_parser['PulseParameters']['PULSES'] = '"'
@@ -155,6 +160,7 @@ class HeaderFileParser(object):
         self.file_parser['PulseParameters']['L_AMP_DELAY'] = str(params['l_amp_delay'])
         self.file_parser['PulseParameters']['DAC_DELAY'] = str(params['dac_delay'])
         self.file_parser['PulseParameters']['ADC_DELAY'] = str(params['adc_delay'])
+        self.file_parser['PulseParameters']['SAMPLES_PER_PRI'] = str(params['samples_per_pri'])
 
 
 if __name__ == '__main__':
@@ -165,6 +171,7 @@ if __name__ == '__main__':
                    'l_amp_delay': 1.0,
                    'dac_delay': 1,
                    'adc_delay': 372,
+                   'samples_per_pri': 2048,
                    'num_pulses': 2,
                    'num_repeats': 75000,
                    'pri_pulse_width': 100,
