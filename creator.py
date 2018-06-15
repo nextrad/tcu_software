@@ -46,6 +46,10 @@ class Creator(Ui_MainWindow):
         self.spin_prepulse.setProperty("value", self.tcu_params.x_amp_delay)
         self.spin_x_amp_delay.setProperty("value", self.tcu_params.l_amp_delay)
         self.spin_l_amp_delay.setProperty("value", self.tcu_params.pulses)
+        self.text_dac_delay.setProperty("value", self.tcu_params.dac_delay)
+        self.text_adc_delay.setProperty("value", self.tcu_params.adc_delay)
+        self.text_sample_per_pri.setProperty("value", self.tcu_params.samples_per_pri)
+        self.combo_waveform_index.setProperty("value", self.tcu_params.waveform_index)
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
@@ -59,6 +63,10 @@ class Creator(Ui_MainWindow):
         self.tcu_params.pre_pulse = self.spin_prepulse.value()
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
+        self.tcu_params.dac_delay = self.text_dac_delay.text()
+        self.tcu_params.adc_delay = self.text_adc_delay.text()
+        self.tcu_params.samples_per_pri = self.text_sample_per_pri.text()
+        self.tcu_params.waveform_index = self.combo_waveform_index.currentIndex() + 1
         # retrieve pulse params from table
         # TODO ...
         for row in range(self.table_pulse_params.rowCount()):
@@ -136,6 +144,10 @@ class TCUParams(object):
         self.x_amp_delay = params['x_amp_delay']
         self.l_amp_delay = params['l_amp_delay']
         self.pulses = params['pulses']
+        self.dac_delay = params['dac_delay']
+        self.adc_delay = params['adc_delay']
+        self.samples_per_pri = params['samples_per_pri']
+        self.waveform_index = params['waveform_index']
 
     def __str__(self):
         ptable_global = PrettyTable()
@@ -182,6 +194,10 @@ class TCUParams(object):
                   'pre_pulse':self.pre_pulse,
                   'x_amp_delay':self.x_amp_delay,
                   'l_amp_delay':self.l_amp_delay,
+                  'dac_delay':self.dac_delay,
+                  'adc_delay':self.adc_delay,
+                  'samples_per_pri':self.samples_per_pri,
+                  'waveform_index':self.waveform_index,
                   'pulses':self.pulses}
         self.hfparser.set_tcu_params(params)
         self.hfparser.write_header('PulseParameters.ini')
