@@ -79,7 +79,7 @@ class HeaderFileParser(object):
                 pulses_list.clear()
             tcu_params['num_pulses'] = len(pulses_list)
             num_pris = eval(self._extract_param('NUM_PRIS'))
-            if num_pris != 0:
+            if tcu_params['num_pulses'] != 0:
                 tcu_params['num_repeats'] = num_pris//tcu_params['num_pulses']
             else:
                 tcu_params['num_repeats'] = 0
