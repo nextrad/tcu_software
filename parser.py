@@ -68,6 +68,7 @@ class HeaderFileParser(object):
                 'dac_delay'         ->  int
                 'adc_delay'         ->  int
                 'samples_per_pri'   ->  int
+                'waveform_index'    ->  int
         """
         tcu_params = dict()
         if self.file_parser.has_section('PulseParameters'):
@@ -89,6 +90,7 @@ class HeaderFileParser(object):
             tcu_params['dac_delay'] = eval(self._extract_param('DAC_DELAY'))
             tcu_params['adc_delay'] = eval(self._extract_param('ADC_DELAY'))
             tcu_params['samples_per_pri'] = eval(self._extract_param('SAMPLES_PER_PRI'))
+            tcu_params['waveform_index'] = eval(self._extract_param('WAVEFORM_INDEX'))
             tcu_params['pulses'] = []
             for pulse in pulses_list:
                 pulse_params = pulse.split(',')
@@ -145,6 +147,7 @@ class HeaderFileParser(object):
                 'dac_delay'         ->  int
                 'adc_delay'         ->  int
                 'samples_per_pri'   ->  int
+                'waveform_index'    ->  int
         """
         # TODO: check that all the required items exist in the params argument
         self.file_parser['PulseParameters']['PULSES'] = '"'
@@ -161,6 +164,7 @@ class HeaderFileParser(object):
         self.file_parser['PulseParameters']['DAC_DELAY'] = str(params['dac_delay'])
         self.file_parser['PulseParameters']['ADC_DELAY'] = str(params['adc_delay'])
         self.file_parser['PulseParameters']['SAMPLES_PER_PRI'] = str(params['samples_per_pri'])
+        self.file_parser['PulseParameters']['WAVEFORM_INDEX'] = str(params['waveform_index'])
 
 
 if __name__ == '__main__':
@@ -172,6 +176,7 @@ if __name__ == '__main__':
                    'dac_delay': 1,
                    'adc_delay': 372,
                    'samples_per_pri': 2048,
+                   'waveform_index': 5,
                    'num_pulses': 2,
                    'num_repeats': 75000,
                    'pri_pulse_width': 100,
