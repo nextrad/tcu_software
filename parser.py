@@ -16,7 +16,7 @@ class HeaderFileParser(object):
                                                'PRI_PULSE_WIDTH': '0',
                                                'X_AMP_DELAY': '0',
                                                'L_AMP_DELAY': '0',
-                                               'PULSES': '0,0,0,0'}
+                                               'PULSES': ''}
         if file_name != '':
             self.read_header(file_name)
 
@@ -65,9 +65,14 @@ class HeaderFileParser(object):
             pulses = self._extract_param('PULSES')
             pulses = pulses.replace('"', '')
             pulses_list = pulses.split('|')
+            if pulses_list == ['']:
+                pulses_list.clear()
             tcu_params['num_pulses'] = len(pulses_list)
             num_pris = eval(self._extract_param('NUM_PRIS'))
-            tcu_params['num_repeats'] = num_pris//tcu_params['num_pulses']
+            if num_pris != 0:
+                tcu_params['num_repeats'] = num_pris//tcu_params['num_pulses']
+            else:
+                tcu_params['num_repeats'] = 0
             tcu_params['pri_pulse_width'] = eval(self._extract_param('PRI_PULSE_WIDTH'))
             tcu_params['pre_pulse'] = eval(self._extract_param('PRE_PULSE'))
             tcu_params['x_amp_delay'] = eval(self._extract_param('X_AMP_DELAY'))
@@ -143,7 +148,7 @@ class HeaderFileParser(object):
 
 if __name__ == '__main__':
     hfparser = HeaderFileParser()
-    hfdir = '../../nextrad_header/NeXtRAD.ini'
+    hfdir = '../nextrad_header/NeXtRAD.ini'
     test_params = {'pre_pulse': 30,
                    'x_amp_delay': 3.5,
                    'l_amp_delay': 1.0,
