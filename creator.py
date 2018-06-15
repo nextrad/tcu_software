@@ -40,16 +40,30 @@ class Creator(Ui_MainWindow):
         # populate fields with existing headerfile data
         self.spin_clk_period.setProperty("value", self.tcu_params.clk_period_ns)
         self.spin_num_pulses.setProperty("value", self.tcu_params.num_pulses)
-        self.spin_num_pulses.setProperty("value", self.tcu_params.num_repeats)
         self.spin_num_repeats.setProperty("value", self.tcu_params.pri_pulse_width)
         self.spin_pri_pulse_width.setProperty("value", self.tcu_params.pre_pulse)
         self.spin_prepulse.setProperty("value", self.tcu_params.x_amp_delay)
         self.spin_x_amp_delay.setProperty("value", self.tcu_params.l_amp_delay)
         self.spin_l_amp_delay.setProperty("value", self.tcu_params.pulses)
-        self.text_dac_delay.setProperty("value", self.tcu_params.dac_delay)
-        self.text_adc_delay.setProperty("value", self.tcu_params.adc_delay)
-        self.text_sample_per_pri.setProperty("value", self.tcu_params.samples_per_pri)
+        self.spin_dac_delay.setProperty("value", self.tcu_params.dac_delay)
+        self.spin_adc_delay.setProperty("value", self.tcu_params.adc_delay)
+        self.spin_samples_per_pri.setProperty("value", self.tcu_params.samples_per_pri)
         self.combo_waveform_index.setProperty("value", self.tcu_params.waveform_index)
+
+        # disabling the RF pulse width field in the pulses editor selection
+        # this will be used for future NeXtRAD experiments capable of waveforms
+        # with varying pulse widths. for now, this value is the same as the
+        # WAVEFORM_INDEX value
+        self.spin_rf_pulse_width.setProperty("enabled", False)
+        self.combo_waveform_index.currentTextChanged.connect(self.pulse_width_update)
+
+    def pulse_width_update(self):
+        pulse_widths_list = [0.5, 1.0, 3.0, 5.0, 10.0, 15.0, 20.0, 0.5, 1.0, 3.0, 5.0, 10.0, 15.0, 20.0]
+        pulse_width = pulse_widths_list[self.combo_waveform_index.currentIndex()]
+        self.spin_rf_pulse_width.setProperty("value", pulse_width)
+        for pulse in self.tcu_params.pulses:
+            pulse['pulse_width'] = pulse_width
+        self.update_table()
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
@@ -63,9 +77,9 @@ class Creator(Ui_MainWindow):
         self.tcu_params.pre_pulse = self.spin_prepulse.value()
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
-        self.tcu_params.dac_delay = self.text_dac_delay.text()
-        self.tcu_params.adc_delay = self.text_adc_delay.text()
-        self.tcu_params.samples_per_pri = self.text_sample_per_pri.text()
+        self.tcu_params.dac_delay = self.spin_dac_delay.value()
+        self.tcu_params.adc_delay = self.spin_adc_delay.value()
+        self.tcu_params.samples_per_pri = self.spin_samples_per_pri.value()
         self.tcu_params.waveform_index = self.combo_waveform_index.currentIndex() + 1
         # retrieve pulse params from table
         # TODO ...
