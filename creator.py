@@ -146,25 +146,15 @@ if __name__ == '__main__':
     # PARSE COMMAND LINE ARGUMENTS
     # -------------------------------------------------------------------------
     clargparser = argparse.ArgumentParser(usage='creator.py [-f FILE]',
-                                     description='Experiment creator for the '
-                                                 'NeXtRAD Timing Control Unit')
+                                          description='Experiment creator for the '
+                                                      'NeXtRAD Timing Control Unit')
     clargparser.add_argument('-f', '--file',
-                        help='header file default [./NeXtRAD.ini]',
-                        default='./NeXtRAD.ini')
+                             help='header file default [./NeXtRAD.ini]',
+                             default='./NeXtRAD.ini')
     args = clargparser.parse_args()
     HEADER_FILE = args.file
 
     tcu_params = TCUParams(HEADER_FILE)
-
-    # check that headfile exists:
-    # check if headerfile exists
-    # if os.path.isfile(HEADER_FILE):
-    #     print('Header file "{}" found, parsing values...'
-    #           .format(HEADER_FILE))
-    #     parse_header()
-    # else:
-    #     print('No existing header file "{}" found, loading with preset values.'
-    #           .format(HEADER_FILE))
 
     app = QtWidgets.QApplication(sys.argv)
 
