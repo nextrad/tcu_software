@@ -10,15 +10,12 @@
 # TODO: verify pulse_params_reg format (is pri 1x32 or 2x16)
 
 import argparse
-import os.path
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
-from prettytable import PrettyTable
-
 
 from creator_gui import Ui_MainWindow
-from parser import HeaderFileParser, TCUParams
+from parser import TCUParams
 
 
 class Creator(Ui_MainWindow):
