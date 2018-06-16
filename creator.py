@@ -48,7 +48,7 @@ class Creator(Ui_MainWindow):
         self.spin_dac_delay.setProperty("value", self.tcu_params.dac_delay)
         self.spin_adc_delay.setProperty("value", self.tcu_params.adc_delay)
         self.spin_samples_per_pri.setProperty("value", self.tcu_params.samples_per_pri)
-        self.combo_waveform_index.setProperty("value", self.tcu_params.waveform_index)
+        self.combo_waveform_index.setProperty("currentIndex", self.tcu_params.waveform_index -1)
 
         # disabling the RF pulse width field in the pulses editor selection
         # this will be used for future NeXtRAD experiments capable of waveforms
