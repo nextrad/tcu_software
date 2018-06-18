@@ -350,10 +350,10 @@ class TCUParams(object):
 
         hex_str = str()
         if hdl:
+            hex_str += 'x\"'
             for word in byte_list:
-                hex_str += 'x\"'
                 hex_str += word[0] + word[1]
-                hex_str += '\"'
+            hex_str += '\"'
         else:
             for word in byte_list:
                 hex_str += '\\x' + word[0] + '\\x' + word[1]
