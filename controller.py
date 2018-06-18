@@ -201,18 +201,28 @@ def parse_header():
     global instruction
     global pre_pulse
 
-    num_pulses = tcu_params._int_to_hex_str(tcu_params.num_pulses,endian='l')
-    num_repeats = tcu_params._int_to_hex_str(tcu_params.num_repeats,endian='l')
-    print(num_pulses)
-    print(num_repeats)
-    # x_amp_delay
-    # l_amp_delay
-    # pri_pulse_width
-    # pulses
-    # status
-    # instruction
-    # pre_pulse
+    hex_params = tcu_params.get_hex_params()
+    num_pulses = hex_params['num_pulses']
+    num_repeats = hex_params['num_repeats']
+    x_amp_delay = hex_params['x_amp_delay']
+    l_amp_delay = hex_params['l_amp_delay']
+    pri_pulse_width = hex_params['pri_pulse_width']
+    pulses = hex_params['pulses']
+    pre_pulse = hex_params['pre_pulse']
 
+    print('num_pulses: ' + num_pulses)
+    print('num_repeats: ' + num_repeats)
+    print('x_amp_delay: ' + x_amp_delay)
+    print('l_amp_delay: ' + l_amp_delay)
+    print('pri_pulse_width: ' + pri_pulse_width)
+    for index, pulse in enumerate(pulses):
+        pri = pulse['pri']
+        print(len(pulse['pri']))
+        # turning pri to 32bit
+        if len(pulse['pri']) == 8:
+            pri = '\\x00\\x00' + pulse['pri']
+        print('pulse['+str(index)+']: ' + pulse['pulse_width'] + pri + pulse['pol_mode'] + pulse['frequency'])
+    print('pre_pulse: ' + pre_pulse)
     # for index, polarity in enumerate(polarisation_order):
     #
     #     if polarity in ['0', '1', '2', '3']:
@@ -237,39 +247,6 @@ def parse_header():
     #     pulses.append(pulse)
 
     logging.info('header parsing complete')
-
-
-def int_to_hex_str(num, endian='l'):
-    """ returns a hexidecimal string in format given an integer
-        endianess:
-            default is LITTLE endian
-            for big endian, pass char 'b' as an argument
-    """
-    hex_num = hex(num)
-    hex_num = hex_num.replace('0x', '')
-    num_zeros_to_pad = 0
-    if len(hex_num) % 4 != 0:
-        num_zeros_to_pad = 4 - len(hex_num) % 4
-    hex_num = '0'*num_zeros_to_pad + hex_num
-    num_bytes = len(hex_num)//2
-    num_words = num_bytes//2
-    byte_list = list()
-    index = 0
-    for count in range(num_words):
-        byte_upper = hex_num[index: (index)+2]
-        byte_lower = hex_num[index+2: (index)+4]
-        if endian == 'b':
-            byte_list.append([byte_upper, byte_lower])
-        else:
-            byte_list.append([byte_lower, byte_upper])
-        index += 4
-    # rev_byte_list = reversed(byte_list)
-    hex_str = str()
-    # for word in rev_byte_list:
-    # for word in reversed(byte_list):
-    for word in byte_list:
-        hex_str += '\\x' + word[0] + '\\x' + word[1]
-    return hex_str
 
 
 def connect():

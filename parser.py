@@ -260,19 +260,19 @@ class TCUParams(object):
         clock_frequency = (1/(self.clk_period_ns * pow(10, -9))/1000000)
         print('-- system clock period : {}ns ({}MHz)'.format(self.clk_period_ns, clock_frequency))
         print('-'*100)
-        print('num_pulses_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_pulses, endian='b', hdl=True), self.num_pulses))
-        print('num_repeats_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_repeats, endian='b', hdl=True), self.num_repeats))
+        print('num_pulses_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_pulses, big_endian=True, hdl=True), self.num_pulses))
+        print('num_repeats_reg <= {};\t\t-- {}'.format(self._int_to_hex_str(self.num_repeats, big_endian=True, hdl=True), self.num_repeats))
         pri_pulse_width = (self._to_clock_ticks(self.pri_pulse_width))
-        pri_pulse_width_hex_str = self._int_to_hex_str(pri_pulse_width, endian='b', hdl=True)
+        pri_pulse_width_hex_str = self._int_to_hex_str(pri_pulse_width, big_endian=True, hdl=True)
         print('pri_pulse_width_reg <= {};\t\t-- {}'.format(pri_pulse_width_hex_str, self.pri_pulse_width))
         pre_pulse = (self._to_clock_ticks(self.pre_pulse))
-        pre_pulse_hex_str = self._int_to_hex_str(pre_pulse, endian='b', hdl=True)
+        pre_pulse_hex_str = self._int_to_hex_str(pre_pulse, big_endian=True, hdl=True)
         print('pre_pulse_reg <= {};\t\t-- {}'.format(pre_pulse_hex_str, self.pre_pulse))
         x_amp_delay = (self._to_clock_ticks(self.x_amp_delay))
-        x_amp_delay_hex_str = self._int_to_hex_str(x_amp_delay, endian='b', hdl=True)
+        x_amp_delay_hex_str = self._int_to_hex_str(x_amp_delay, big_endian=True, hdl=True)
         print('x_amp_delay_reg <= {};\t\t-- {}'.format(x_amp_delay_hex_str, self.x_amp_delay))
         l_amp_delay = (self._to_clock_ticks(self.l_amp_delay))
-        l_amp_delay_hex_str = self._int_to_hex_str(l_amp_delay, endian='b', hdl=True)
+        l_amp_delay_hex_str = self._int_to_hex_str(l_amp_delay, big_endian=True, hdl=True)
         print('l_amp_delay_reg <= {};\t\t-- {}'.format(l_amp_delay_hex_str, self.l_amp_delay))
 
         print('-'*100)
@@ -285,36 +285,36 @@ class TCUParams(object):
             pulse_width = self._to_clock_ticks(pulse['pulse_width'])
             pri = self._to_clock_ticks(pulse['pri'])
             pri_offset = pri - pre_pulse - pulse_width
-            print(self._int_to_hex_str(pulse_width, endian='b', hdl=True) + ', ' +
+            print(self._int_to_hex_str(pulse_width, big_endian=True, hdl=True) + ', ' +
                   # TODO: 1x32bit or 2x16bit?
-                  self._int_to_hex_str(pri_offset, endian='b', hdl=True) + ', ' +
-                  self._int_to_hex_str(int(pulse['pol_mode']), endian='b', hdl=True) + ', ' +
-                  self._int_to_hex_str(int(pulse['frequency']), endian='l', hdl=True) + ', ')
+                  self._int_to_hex_str(pri_offset, big_endian=True, hdl=True) + ', ' +
+                  self._int_to_hex_str(int(pulse['pol_mode']), big_endian=True, hdl=True) + ', ' +
+                  self._int_to_hex_str(int(pulse['frequency']), big_endian=False, hdl=True) + ', ')
         print('\nothers => x\"ffff\"')
         print('-' * 100)
 
-    def get_hex_params(self):
+    def get_hex_params(self, hdl_format=False):
         """returns a dictionary of parameters in hex string format"""
         hex_params = dict()
-        hex_params['num_pulses'] = self._int_to_hex_str(self.num_pulses)
-        hex_params['num_repeats'] = self._int_to_hex_str(self.num_repeats)
+        hex_params['num_pulses'] = self._int_to_hex_str(self.num_pulses, hdl=hdl_format, big_endian=hdl_format)
+        hex_params['num_repeats'] = self._int_to_hex_str(self.num_repeats, hdl=hdl_format, big_endian=hdl_format)
         pri_pulse_width = (self._to_clock_ticks(self.pri_pulse_width))
-        hex_params['pri_pulse_width'] = self._int_to_hex_str(pri_pulse_width)
+        hex_params['pri_pulse_width'] = self._int_to_hex_str(pri_pulse_width, hdl=hdl_format, big_endian=hdl_format)
         pre_pulse = (self._to_clock_ticks(self.pre_pulse))
-        hex_params['pre_pulse'] = self._int_to_hex_str(pre_pulse)
+        hex_params['pre_pulse'] = self._int_to_hex_str(pre_pulse, hdl=hdl_format, big_endian=hdl_format)
         x_amp_delay = (self._to_clock_ticks(self.x_amp_delay))
-        hex_params['x_amp_delay'] = self._int_to_hex_str(x_amp_delay)
+        hex_params['x_amp_delay'] = self._int_to_hex_str(x_amp_delay, hdl=hdl_format, big_endian=hdl_format)
         l_amp_delay = (self._to_clock_ticks(self.l_amp_delay))
-        hex_params['l_amp_delay'] = self._int_to_hex_str(l_amp_delay)
+        hex_params['l_amp_delay'] = self._int_to_hex_str(l_amp_delay, hdl=hdl_format, big_endian=hdl_format)
         hex_params['pulses'] = list()
         for index, pulse in enumerate(self.pulses):
             pulse_width = self._to_clock_ticks(pulse['pulse_width'])
             pri = self._to_clock_ticks(pulse['pri'])
             pri_offset = pri - pre_pulse - pulse_width
-            hex_params['pulses'].append({'pulse_width': self._int_to_hex_str(pulse_width),
-                                         'pri': self._int_to_hex_str(pri_offset),
-                                         'pol_mode': self._int_to_hex_str(int(pulse['pol_mode'])),
-                                         'frequency': self._int_to_hex_str(int(pulse['frequency']), endian='b')})
+            hex_params['pulses'].append({'pulse_width': self._int_to_hex_str(pulse_width, hdl=hdl_format, big_endian=hdl_format),
+                                         'pri': self._int_to_hex_str(pri_offset, hdl=hdl_format, big_endian=hdl_format),
+                                         'pol_mode': self._int_to_hex_str(int(pulse['pol_mode']), hdl=hdl_format, big_endian=hdl_format),
+                                         'frequency': self._int_to_hex_str(int(pulse['frequency']), hdl=hdl_format, big_endian=(not hdl_format))})
 
         return hex_params
 
@@ -323,11 +323,11 @@ class TCUParams(object):
         # NOTE: assumes inputs are in microseconds
         return(int(x * 1000 // self.clk_period_ns))
 
-    def _int_to_hex_str(self, num, endian='l', hdl=False):
+    def _int_to_hex_str(self, num, big_endian=False, hdl=False):
         """ returns a hexidecimal string in format given an integer
             endianess:
                 default is LITTLE endian
-                for big endian, pass char 'b' as an argument
+                for big endian, pass 'big_endian = True' as an argument
         """
         hex_num = hex(num)
         hex_num = hex_num.replace('0x', '')
@@ -342,7 +342,7 @@ class TCUParams(object):
         for count in range(num_words):
             byte_upper = hex_num[index: index + 2]
             byte_lower = hex_num[index + 2: index + 4]
-            if endian == 'b':
+            if big_endian:
                 byte_list.append([byte_upper, byte_lower])
             else:
                 byte_list.append([byte_lower, byte_upper])
