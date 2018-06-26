@@ -2,7 +2,7 @@ import configparser
 import logging
 import os.path
 import sys
-
+import prettytable
 
 class HeaderFileParser(object):
     """NeXtRAD.ini File Parser"""
@@ -188,8 +188,8 @@ class TCUParams(object):
         self.waveform_index = params['waveform_index']
 
     def __str__(self):
-        ptable_global = PrettyTable()
-        ptable_global.field_names = ['Parameter', 'Value', 'Hex Cycles [big endian]']
+        ptable_global = prettytable.PrettyTable()
+        ptable_global.field_names = ['Parameter', 'Value', 'Hex Cycles [little endian]']
         ptable_global.align['Parameter'] = 'l'
         ptable_global.add_row(['num_pulses', self.num_pulses, self._int_to_hex_str(self.num_pulses)])
         ptable_global.add_row(['num_repeats', self.num_repeats, self._int_to_hex_str(self.num_repeats)])
@@ -201,14 +201,14 @@ class TCUParams(object):
         ptable_global.add_row(
             ['l_amp_delay', self.l_amp_delay, self._int_to_hex_str(int(self.l_amp_delay * 1000) // self.clk_period_ns)])
 
-        ptable_pulses = PrettyTable()
+        ptable_pulses = prettytable.PrettyTable()
         ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
         for index, pulse in enumerate(self.pulses):
             ptable_pulses.add_row([index,
-                                   pulse.pulse_width,
-                                   pulse.pri,
-                                   pulse.pol_mode,
-                                   pulse.frequency])
+                                   pulse['pulse_width'],
+                                   pulse['pri'],
+                                   pulse['pol_mode'],
+                                   pulse['frequency']])
 
         return 'Global Params:\n' + str(ptable_global) + '\nPulse Params\n' + str(ptable_pulses)
 
