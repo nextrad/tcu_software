@@ -191,24 +191,25 @@ class TCUParams(object):
         ptable_global = prettytable.PrettyTable()
         ptable_global.field_names = ['Parameter', 'Value', 'Hex Cycles [little endian]']
         ptable_global.align['Parameter'] = 'l'
-        ptable_global.add_row(['num_pulses', self.num_pulses, self._int_to_hex_str(self.num_pulses)])
-        ptable_global.add_row(['num_repeats', self.num_repeats, self._int_to_hex_str(self.num_repeats)])
+        hex_params = self.get_hex_params()
+        ptable_global.add_row(['num_pulses', self.num_pulses, hex_params['num_pulses']])
+        ptable_global.add_row(['num_repeats', self.num_repeats, hex_params['num_repeats']])
         ptable_global.add_row(
-            ['pri_pulse_width', self.pri_pulse_width, self._int_to_hex_str(int(self.pri_pulse_width * 1000) // self.clk_period_ns)])
-        ptable_global.add_row(['pre_pulse', self.pre_pulse, self._int_to_hex_str(int(self.pre_pulse * 1000) // self.clk_period_ns)])
+            ['pri_pulse_width', self.pri_pulse_width, hex_params['pri_pulse_width']])
+        ptable_global.add_row(['pre_pulse', self.pre_pulse, hex_params['pre_pulse']])
         ptable_global.add_row(
-            ['x_amp_delay', self.x_amp_delay, self._int_to_hex_str(int(self.x_amp_delay * 1000) // self.clk_period_ns)])
+            ['x_amp_delay', self.x_amp_delay, hex_params['x_amp_delay']])
         ptable_global.add_row(
-            ['l_amp_delay', self.l_amp_delay, self._int_to_hex_str(int(self.l_amp_delay * 1000) // self.clk_period_ns)])
+            ['l_amp_delay', self.l_amp_delay, hex_params['l_amp_delay']])
 
         ptable_pulses = prettytable.PrettyTable()
-        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
+        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', '[PRIoffset] = (PRI) - pre_pulse - pulse_width', 'Mode', 'Frequency']
         for index, pulse in enumerate(self.pulses):
             ptable_pulses.add_row([index,
-                                   pulse['pulse_width'],
-                                   pulse['pri'],
-                                   pulse['pol_mode'],
-                                   pulse['frequency']])
+                                  str(pulse['pulse_width']) + ' : ' + hex_params['pulses'][index]['pulse_width'],
+                                   '(' + str(pulse['pri']) + ') : [' + hex_params['pulses'][index]['pri'] + ']',
+                                  str(pulse['pol_mode']) + ' : ' + hex_params['pulses'][index]['pol_mode'],
+                                  str(pulse['frequency']) + ' : ' + hex_params['pulses'][index]['frequency']])
 
         return 'Global Params:\n' + str(ptable_global) + '\nPulse Params\n' + str(ptable_pulses)
 
