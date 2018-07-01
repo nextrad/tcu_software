@@ -203,7 +203,7 @@ class TCUParams(object):
             ['l_amp_delay', self.l_amp_delay, hex_params['l_amp_delay']])
 
         ptable_pulses = prettytable.PrettyTable()
-        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', '[PRIoffset] = (PRI) - pre_pulse - pulse_width', 'Mode', 'Frequency']
+        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRi', 'Mode', 'Frequency']
         for index, pulse in enumerate(self.pulses):
             ptable_pulses.add_row([index,
                                   str(pulse['pulse_width']) + ' : ' + hex_params['pulses'][index]['pulse_width'],
@@ -211,7 +211,7 @@ class TCUParams(object):
                                   str(pulse['pol_mode']) + ' : ' + hex_params['pulses'][index]['pol_mode'],
                                   str(pulse['frequency']) + ' : ' + hex_params['pulses'][index]['frequency']])
 
-        return 'Global Params:\n' + str(ptable_global) + '\nPulse Params\n' + str(ptable_pulses)
+        return 'Global Params:\n' + str(ptable_global) + '\nPulse Params\n' + str(ptable_pulses) + '\n[PRIoffset] = (PRI) - pre_pulse - pulse_width'
 
     def export(self):
         """exports pulse parameters in NeXtRAD.ini format"""
