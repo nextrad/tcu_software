@@ -212,15 +212,14 @@ def parse_header():
     x_amp_delay = hex_params['x_amp_delay']
     l_amp_delay = hex_params['l_amp_delay']
     pri_pulse_width = hex_params['pri_pulse_width']
+    # ensuring pri_pulse_width is 32bit hex number
+    if len(pri_pulse_width) == 8:
+        # NOTE: change this depending on how pri_pulse_width is stored in HDL
+        # pri_pulse_width = '\\x00\\x00' + pri_pulse_width
+        pri_pulse_width = pri_pulse_width + '\\x00\\x00'
     pulses = hex_params['pulses']
     pre_pulse = hex_params['pre_pulse']
 
-    print('num_pulses: ' + num_pulses)
-    print('num_repeats: ' + num_repeats)
-    print('x_amp_delay: ' + x_amp_delay)
-    print('l_amp_delay: ' + l_amp_delay)
-    print('pri_pulse_width: ' + pri_pulse_width)
-    print('pre_pulse: ' + pre_pulse)
     for index, pulse in enumerate(pulses):
         # ensuring PRI is 32bit hex number
         if len(pulse['pri']) == 8:
@@ -297,32 +296,30 @@ def write_registers():
     #       core_tcu.write_reg('m', num_repeats)
     #       core_tcu.write_reg('n', num_pulses)
 
-    # stitch together all the pulse parameters into one long string
-    # pulses    = [{pulse1}, {pulse2}, {pulse3}]
-    # pulse     = {"pulse_number":xxx, "pulse width":xxx, "pri_offset":xxx,
-    #              "frequency":xxx, 'mode':x}
-
     pulse_param_str = str()
     for pulse in pulses:
         pulse_param_str += pulse['pulse_width'] + pulse['pri'] + pulse['pol_mode'] + pulse['frequency']
 
-    print(pulse_param_str)
-    sys.exit(0)
-    logger.debug('PULSE STRING:')
-    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'reg_pulses'))
-    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'reg_pulses'))
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'pulses'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'pulses'))
 
-    num_repeats_str = str()
-    if len(int_to_hex_str(num_repeats)) > 8:
-        num_repeats_str = int_to_hex_str(num_repeats)[8:] + int_to_hex_str(num_repeats)[0:8]
-    else:
-        num_repeats_str = int_to_hex_str(num_repeats)[0:8] + '\\x00\\x00'
-    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats_str, fpga_con._pid, 'm'))
-    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats_str, fpga_con._pid, 'm'))
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats, fpga_con._pid, 'num_repeats'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats, fpga_con._pid, 'num_repeats'))
 
-    num_pulses_str = int_to_hex_str(num_pulses)
-    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses_str, fpga_con._pid, 'n'))
-    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses_str, fpga_con._pid, 'n'))
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses, fpga_con._pid, 'num_pulses'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses, fpga_con._pid, 'num_pulses'))
+
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(x_amp_delay, fpga_con._pid, 'x_amp_delay'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(x_amp_delay, fpga_con._pid, 'x_amp_delay'))
+
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
+
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
+
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pre_pulse, fpga_con._pid, 'pre_pulse'))
+    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pre_pulse, fpga_con._pid, 'pre_pulse'))
 
 
 def verify_registers():
