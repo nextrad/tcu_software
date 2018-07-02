@@ -87,109 +87,7 @@ def init_logger():
 def parse_header():
 
     tcu_params = TCUParams(HEADER_FILE)
-    print(tcu_params)
-
-
-    # global num_pulses
-    # global num_repeats
-    # global pulses
-    #
-    # # check if headerfile exists
-    # if not os.path.isfile(HEADER_FILE):
-    #     logger.error('could not find header file "{}" in path: {}'
-    #                  .format(HEADER_NAME, HEADER_PATH))
-    #     sys.exit(64)
-    #
-    # header_file = configparser.ConfigParser()
-    # header_file.read(HEADER_FILE)
-    #
-    # try:
-    #     pulse_parameters = header_file['PulseParameters']
-    # except Exception as e:
-    #     logger.error('could not find {} section in header'
-    #                  .format('PulseParameters'))
-
-    #   LFM              NLFM
-    #   0.5us   = 1      0.5us   = 8
-    #   1.0us   = 2      1.0us   = 9
-    #   3.0us   = 3      3.0us   = 10
-    #   5.0us   = 4      5.0us   = 11
-    #   10.0us  = 5      10.0us  = 12
-    #   15.0us  = 6      15.0us  = 13
-    #   20.0us  = 7      20.0us  = 14
-
-    # PULSE_WIDTHS = [0, 0.5, 1.0, 3.0, 5.0, 10.0, 15.0, 20.0,
-    #                 0.5, 1.0, 3.0, 5.0, 10.0, 15.0, 20.0]
-
-    # try:
-    #     waveform_index = pulse_parameters['waveform_index']
-    #     pulse_width = (int(PULSE_WIDTHS[eval(waveform_index)]*1000))  # ns
-    #     logger.debug('waveform_index = {} --> pulse_width = {} ({}us)'
-    #                  .format(waveform_index, pulse_width, pulse_width/1000))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('waveform_index'))
-    #     exit(65)
-    #
-    # try:
-    #     polarisation_order = (pulse_parameters['pol_order']).replace('"', '')
-    #     polarisation_order = polarisation_order.split(',')
-    #     num_pulses = len(polarisation_order)
-    #     logger.debug('polarisation_order = {} --> num_pulses = {}'
-    #                  .format(polarisation_order, num_pulses))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('pol_order'))
-    #     exit(65)
-    #
-    # try:
-    #     num_pris = eval(pulse_parameters['num_pris'])
-    #     num_repeats = num_pris  # change of terminology
-    #     logger.debug('num_pris (num_repeats) = {}'.format(num_pris))
-    #
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('num_pris'))
-    #     exit(65)
-    #
-    # try:
-    #     pre_pulse = eval(pulse_parameters['pre_pulse'])
-    #     logger.debug('pre_pulse = {}'.format(pre_pulse))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('pre_pulse'))
-    #     exit(65)
-    #
-    # try:
-    #     pri = eval(pulse_parameters['pri'])
-    #     logger.debug('pri = {}'.format(pri))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('pri'))
-    #     exit(65)
-    #
-    # # NOTE: this will change to allow for different frequencies in each band
-    # try:
-    #     l_band_waveform_freq = eval(pulse_parameters['l_band_waveform_freq'])
-    #     logger.debug('l_band_waveform_freq = {}'.format(l_band_waveform_freq))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('l_band_waveform_freq'))
-    #     exit(65)
-    #
-    # try:
-    #     x_band_waveform_freq = eval(pulse_parameters['x_band_waveform_freq'])
-    #     logger.debug('x_band_waveform_freq = {}'.format(x_band_waveform_freq))
-    # except Exception as e:
-    #     logger.error("could not find required parameter '{}' from header"
-    #                  .format('x_band_waveform_freq'))
-    #     exit(65)
-
-    # -------------------------------------------------------------------------
-    # CALCULATING REGISTER VALUES
-    # -------------------------------------------------------------------------
-
-    logger.debug('calculating register values...')
+    logger.debug('Extracted parameters from header:\n' + str(tcu_params))
 
     global num_pulses
     global num_repeats
@@ -226,31 +124,6 @@ def parse_header():
             # NOTE: change this depending on how PRI is stored in HDL
             # pulse['pri'] = '\\x00\\x00' + pulse['pri']
             pulse['pri'] = pulse['pri'] + '\\x00\\x00'
-
-    for index, pulse in enumerate(pulses):
-        print('pulse['+str(index)+']: ' + pulse['pulse_width'] + pulse['pri'] + pulse['pol_mode'] + pulse['frequency'])
-    # for index, polarity in enumerate(polarisation_order):
-    #
-    #     if polarity in ['0', '1', '2', '3']:
-    #         frequency = l_band_waveform_freq
-    #         amp_delay = 1300  # 1.3us
-    #     else:
-    #         frequency = x_band_waveform_freq
-    #         amp_delay = 3510  # 3.51us
-    #
-    #     mb_offset = (pre_pulse*1000)//CLK_PERIOD_NS
-    #     do_offset = ((pulse_width) - amp_delay)//CLK_PERIOD_NS
-    #     pri_offset = ((pri*1000)//CLK_PERIOD_NS) - mb_offset - do_offset
-    #
-    #     pulse = {"pulse_number": index, "mb_offset": mb_offset,
-    #              "dig_offset": do_offset, "pri_offset": pri_offset,
-    #              "frequency": frequency, "mode": eval(polarity)}
-    #
-    #     logger.debug('PULSE {}: mb_offset = {}, dig_offset = {},'
-    #                  ' pri_offset = {}, frequency = {}, mode = {}'
-    #                  .format(index, mb_offset, do_offset, pri_offset,
-    #                          frequency, eval(polarity)))
-    #     pulses.append(pulse)
 
     logging.info('header parsing complete')
 
