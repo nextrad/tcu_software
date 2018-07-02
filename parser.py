@@ -203,7 +203,7 @@ class TCUParams(object):
             ['l_amp_delay', self.l_amp_delay, hex_params['l_amp_delay']])
 
         ptable_pulses = prettytable.PrettyTable()
-        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRi', 'Mode', 'Frequency']
+        ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
         for index, pulse in enumerate(self.pulses):
             ptable_pulses.add_row([index,
                                   str(pulse['pulse_width']) + ' : ' + hex_params['pulses'][index]['pulse_width'],
