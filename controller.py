@@ -87,7 +87,7 @@ def init_logger():
 def parse_header():
 
     tcu_params = TCUParams(HEADER_FILE)
-
+    print(tcu_params)
 
 
     # global num_pulses
@@ -215,14 +215,16 @@ def parse_header():
     print('x_amp_delay: ' + x_amp_delay)
     print('l_amp_delay: ' + l_amp_delay)
     print('pri_pulse_width: ' + pri_pulse_width)
-    for index, pulse in enumerate(pulses):
-        pri = pulse['pri']
-        print(len(pulse['pri']))
-        # turning pri to 32bit
-        if len(pulse['pri']) == 8:
-            pri = '\\x00\\x00' + pulse['pri']
-        print('pulse['+str(index)+']: ' + pulse['pulse_width'] + pri + pulse['pol_mode'] + pulse['frequency'])
     print('pre_pulse: ' + pre_pulse)
+    for index, pulse in enumerate(pulses):
+        # ensuring PRI is 32bit hex number
+        if len(pulse['pri']) == 8:
+            # NOTE: change this depending on how PRI is stored in HDL
+            # pulse['pri'] = '\\x00\\x00' + pulse['pri']
+            pulse['pri'] = pulse['pri'] + '\\x00\\x00'
+
+    for index, pulse in enumerate(pulses):
+        print('pulse['+str(index)+']: ' + pulse['pulse_width'] + pulse['pri'] + pulse['pol_mode'] + pulse['frequency'])
     # for index, polarity in enumerate(polarisation_order):
     #
     #     if polarity in ['0', '1', '2', '3']:
