@@ -135,14 +135,14 @@ def connect():
                            username='root',
                            password='rhino',
                            login_timeout=30)
-    logger.debug('attempting to connect...')
-    try:
-        fpga_con.connect()
-    except Exception as e:
-        logger.error('failed to connect to rhino')
-        sys.exit(66)
-
-    logger.debug('connection successful!')
+    # logger.debug('attempting to connect...')
+    # try:
+    #     fpga_con.connect()
+    # except Exception as e:
+    #     logger.error('failed to connect to rhino')
+    #     sys.exit(66)
+    #
+    # logger.debug('connection successful!')
 
 
 def launch_bof():
@@ -321,12 +321,13 @@ if __name__ == '__main__':
                                                  'NeXtRAD Timing Control Unit')
     parser.add_argument('address', help='IP address of TCU')
     parser.add_argument('file', help="header file")
-    parser.add_argument('-b', '--bof', help='name of .bof file to be executed'
+    parser.add_argument('-b', '--bof', help='name of .bof file to be executed '
                         'on RHINO [\'tcu_v2.bof\']', default='tcu_v2.bof')
-    parser.add_argument('-t', '--timeout', help='login timeout (seconds) to'
+    parser.add_argument('-t', '--timeout', help='login timeout (seconds) to '
                         'establish SSH connection to RHINO [30]',
                         type=int, default=30)
-    parser.add_argument('-l', '--logdir', help='directory to store log file default [\'/tmp\']', default='/tmp')
+    parser.add_argument('-l', '--logdir', help='directory to store log file '
+                        '[\'/tmp\']', default='/tmp')
     args = parser.parse_args()
 
     init_logger()
@@ -345,14 +346,18 @@ if __name__ == '__main__':
     # -------------------------------------------------------------------------
     # EXTRACT PARAMETERS FROM HEADER FILE
     # -------------------------------------------------------------------------
-    logger.debug('parsing header file: ' + HEADER_FILE)
+    logger.debug('........................')
+    logger.debug('PARSING HEADERFILE...')
+    logger.debug('........................')
     parse_header()
 
     # -------------------------------------------------------------------------
     # CONNECT TO RHINO
     # -------------------------------------------------------------------------
-    # logger.debug('connecting to TCU...')
-    # connect()
+    logger.debug('........................')
+    logger.debug('CONNECTING TO TCU...')
+    logger.debug('........................')
+    connect()
 
     # -------------------------------------------------------------------------
     # CONFIGURE RHINO WITH TCU PROJECT
@@ -363,25 +368,33 @@ if __name__ == '__main__':
     # -------------------------------------------------------------------------
     # SEND PARAMETERS TO TCU
     # -------------------------------------------------------------------------
-    logger.debug('sending params to TCU...')
+    logger.debug('........................')
+    logger.debug('SENDING PARAMS TO TCU...')
+    logger.debug('........................')
     write_registers()
-
+    sys.exit(0)
     # -------------------------------------------------------------------------
     # VERIFY REGISTERS HAVE CORRECT VALUES
     # -------------------------------------------------------------------------
-    logger.debug('verifying TCU registers...')
+    logger.debug('........................')
+    logger.debug('VERYFYING TCU REGISTERS...')
+    logger.debug('........................')
     verify_registers()
 
     # -------------------------------------------------------------------------
     # ARM THE TCU
     # -------------------------------------------------------------------------
-    logger.debug('arming the TCU...')
+    logger.debug('........................')
+    logger.debug('ARMING TCU...')
+    logger.debug('........................')
     arm_tcu()
 
     # -------------------------------------------------------------------------
     # CLOSE SSH CONNECTION
     # -------------------------------------------------------------------------
-    logger.debug('closing ssh connection...')
+    logger.debug('........................')
+    logger.debug('CLOSING SSH CONNECTION...')
+    logger.debug('........................')
     fpga_con.disconnect()
 
     logger.info('script completed successfully')
