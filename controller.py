@@ -204,6 +204,11 @@ def parse_header():
     hex_params = tcu_params.get_hex_params()
     num_pulses = hex_params['num_pulses']
     num_repeats = hex_params['num_repeats']
+    # ensuring num_repeats is 32bit hex number
+    if len(num_repeats) == 8:
+        # NOTE: change this depending on how num_repeats is stored in HDL
+        # num_repeats = '\\x00\\x00' + num_repeats
+        num_repeats = num_repeats + '\\x00\\x00'
     x_amp_delay = hex_params['x_amp_delay']
     l_amp_delay = hex_params['l_amp_delay']
     pri_pulse_width = hex_params['pri_pulse_width']
@@ -293,26 +298,16 @@ def write_registers():
     #       core_tcu.write_reg('n', num_pulses)
 
     # stitch together all the pulse parameters into one long string
-    # pulses = list()                     # [{pulse1}, {pulse2}, {pulse3}]
-    # {"pulse_number": xxx, "mb_offset":xxx, "dig_offset":xxx, "pri_offset":xxx,
-    # "frequency": xxx, 'tx_pol': xxx, 'rx_pol': xxx}
+    # pulses    = [{pulse1}, {pulse2}, {pulse3}]
+    # pulse     = {"pulse_number":xxx, "pulse width":xxx, "pri_offset":xxx,
+    #              "frequency":xxx, 'mode':x}
 
     pulse_param_str = str()
-    # TODO: better way to check PRIoffset size
     for pulse in pulses:
-        pulse_param_str += int_to_hex_str(pulse['mb_offset'])
-        pulse_param_str += int_to_hex_str(pulse['dig_offset'])
-        if len(int_to_hex_str(pulse['pri_offset'])) > 8:
-            pulse_param_str += int_to_hex_str(pulse['pri_offset'])[0:8]
-        else:
-            pulse_param_str += '\\x00\\x00'
-        pulse_param_str += int_to_hex_str(pulse['frequency'], 'b')  # big endian
-        pulse_param_str += int_to_hex_str(pulse['mode'])
-        if len(int_to_hex_str(pulse['pri_offset'])) > 8:
-            pulse_param_str += int_to_hex_str(pulse['pri_offset'])[8:]
-        else:
-            pulse_param_str += int_to_hex_str(pulse['pri_offset'])[0:8]
+        pulse_param_str += pulse['pulse_width'] + pulse['pri'] + pulse['pol_mode'] + pulse['frequency']
 
+    print(pulse_param_str)
+    sys.exit(0)
     logger.debug('PULSE STRING:')
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'reg_pulses'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'reg_pulses'))
@@ -482,18 +477,18 @@ if __name__ == '__main__':
     # -------------------------------------------------------------------------
     logger.debug('parsing header file: ' + HEADER_FILE)
     parse_header()
-    sys.exit(0)
+
     # -------------------------------------------------------------------------
     # CONNECT TO RHINO
     # -------------------------------------------------------------------------
-    logger.debug('connecting to TCU...')
-    connect()
+    # logger.debug('connecting to TCU...')
+    # connect()
 
     # -------------------------------------------------------------------------
     # CONFIGURE RHINO WITH TCU PROJECT
     # -------------------------------------------------------------------------
-    logger.debug('launching TCU .bof...')
-    launch_bof()
+    # logger.debug('launching TCU .bof...')
+    # launch_bof()
 
     # -------------------------------------------------------------------------
     # SEND PARAMETERS TO TCU
