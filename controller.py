@@ -46,8 +46,8 @@ status = str()
 instruction = str()
 pre_pulse = str()
 
-# CLK_PERIOD_NS = 10
-# CLK_FREQUENCY_HZ = 1 / (CLK_PERIOD_NS * pow(10, -9))
+CLK_PERIOD_NS = 10
+CLK_FREQUENCY_HZ = 1 / (CLK_PERIOD_NS * pow(10, -9))
 
 
 logger = logging.getLogger('tcu_project_logger')
@@ -125,14 +125,14 @@ def connect():
                            username='root',
                            password='rhino',
                            login_timeout=30)
-    # logger.debug('attempting to connect...')
-    # try:
-    #     fpga_con.connect()
-    # except Exception as e:
-    #     logger.error('failed to connect to rhino')
-    #     sys.exit(66)
-    #
-    # logger.debug('connection successful!')
+    logger.debug('attempting to connect...')
+    try:
+        fpga_con.connect()
+    except Exception as e:
+        logger.error('failed to connect to rhino')
+        sys.exit(66)
+
+    logger.debug('connection successful!')
 
 
 def launch_bof():
@@ -150,7 +150,7 @@ def launch_bof():
             fpga_con._pid = existing_bof_proc
         else:
             logger.debug('no existing running .bof found, launching TCU.bof')
-            fpga_con.launch_bof(BOF_EXE)
+            fpga_con.program(BOF_EXE)
 
 
 def write_registers():
@@ -164,28 +164,33 @@ def write_registers():
         pulse_param_str += pulse['pulse_width'] + pulse['pri'] + pulse['pol_mode'] + pulse['frequency']
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'pulses'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'pulses'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pulse_param_str, fpga_con._pid, 'pulses'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats, fpga_con._pid, 'num_repeats'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats, fpga_con._pid, 'num_repeats'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_repeats, fpga_con._pid, 'num_repeats'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses, fpga_con._pid, 'num_pulses'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses, fpga_con._pid, 'num_pulses'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(num_pulses, fpga_con._pid, 'num_pulses'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(x_amp_delay, fpga_con._pid, 'x_amp_delay'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(x_amp_delay, fpga_con._pid, 'x_amp_delay'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(x_amp_delay, fpga_con._pid, 'x_amp_delay'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
 
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pre_pulse, fpga_con._pid, 'pre_pulse'))
-    # fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pre_pulse, fpga_con._pid, 'pre_pulse'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pre_pulse, fpga_con._pid, 'pre_pulse'))
 
 
 def verify_registers():
+
+    logger.debug('reading pre_pulse...')
+    reg_pre_pulse_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pre_pulse'))
+    logger.debug('pre_pulse:' + reg_pre_pulse_rcv.decode('utf-8'))
+
     logger.debug('reading pulses...')
     reg_pulses_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pulses'))
     logger.debug('pulses:' + reg_pulses_rcv.decode('utf-8'))
@@ -202,9 +207,10 @@ def verify_registers():
         for word in line_in_array:
             read_data_array.append(word)
 
-    logger.debug('{}\t\t{}\t{}\t{}\t{}\t{}\t{}'.format("Pulse #", "pulse_width (ns)", "pri_offset (ns)", "mode", "freq", "PRF (Hz)"))
-    logger.debug('{}\t\t{}\t{}\t{}\t{}\t{}\t{}'.format("-------", "----------", "----------", "---------", "-----------", "--------"))
-    for pulse_number in range(num_pulses):
+    logger.debug('{}\t\t{}\t{}\t{}\t{}\t{}'.format("Pulse #", "pulse_width (ns)", "pri_offset (ns)", "mode", "freq", "PRF (Hz)"))
+    logger.debug('{}\t\t{}\t{}\t{}\t{}\t{}'.format("-------", "----------", "----------", "---------", "-----------", "--------"))
+    # for pulse_number in range(tcu_params.params['num_pulses']):
+    for pulse_number in range(4):
 
         pulse_width = read_data_array[((pulse_number*5)+0)]
         pulse_width = eval("0x"+pulse_width)*CLK_PERIOD_NS
@@ -220,10 +226,12 @@ def verify_registers():
         freq = freq[2:4] + freq[0:2]
         freq = eval("0x"+freq)
 
-        pri_calc = (pulse_width + pre_pulse + pri) / 1000000000  # PRI in seconds
+        # pre_pulse = eval("0x"+s(reg_pre_pulse_rcv))
+        # pri_calc = (pulse_width + pre_pulse + pri_offset) / 1000000000  # PRI in seconds
+        pri_calc = (pulse_width + 3000 + pri_offset) / 1000000000  # PRI in seconds
         prf_calc = 1 / pri_calc  # PRF in Hertz
 
-        logger.debug('{}\t\t\t{}\t\t{}\t\t{}\t\t{}\t\t{}\t{}'.format(str(pulse_number), str(pulse_width), str(pri_offset), str(mode), str(freq), str(prf_calc)))
+        logger.debug('{}\t\t\t\t{}\t\t\t{}\t\t{}\t\t{}\t\t{}'.format(str(pulse_number), str(pulse_width), str(pri_offset), str(mode), str(freq), str(prf_calc)))
 
     logger.debug('reading num_pulses...')
     reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_pulses'))
@@ -245,17 +253,15 @@ def verify_registers():
     reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pri_pulse_width'))
     logger.debug('pri_pulse_width:' + reg_rcv.decode('utf-8'))
 
-    logger.debug('reading pre_pulse...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pre_pulses'))
-    logger.debug('pre_pulse:' + reg_rcv.decode('utf-8'))
-
     # if regs dont match:
     # sys.exit(67)
 
 
 def arm_tcu():
-    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(int_to_hex_str(0), fpga_con._pid, 'reg_led'))
-    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(int_to_hex_str(1), fpga_con._pid, 'reg_led'))
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x00\\x00', fpga_con._pid, 'instruction'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x00\\x00', fpga_con._pid, 'instruction'))
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
     logger.debug('TCU armed')
 
 # TODO: incorporate this:
@@ -307,7 +313,7 @@ if __name__ == '__main__':
     parser.add_argument('address', help='IP address of TCU')
     parser.add_argument('file', help="header file")
     parser.add_argument('-b', '--bof', help='name of .bof file to be executed '
-                        'on RHINO [\'tcu_v2.bof\']', default='tcu_v2.bof')
+                        'on RHINO [\'tcu_v2-1.bof\']', default='tcu_v2-1.bof')
     parser.add_argument('-t', '--timeout', help='login timeout (seconds) to '
                         'establish SSH connection to RHINO [30]',
                         type=int, default=30)
@@ -347,8 +353,8 @@ if __name__ == '__main__':
     # -------------------------------------------------------------------------
     # CONFIGURE RHINO WITH TCU PROJECT
     # -------------------------------------------------------------------------
-    # logger.debug('launching TCU .bof...')
-    # launch_bof()
+    logger.debug('launching TCU .bof...')
+    launch_bof()
 
     # -------------------------------------------------------------------------
     # SEND PARAMETERS TO TCU
@@ -357,7 +363,7 @@ if __name__ == '__main__':
     logger.debug('SENDING PARAMS TO TCU...')
     logger.debug('........................')
     write_registers()
-    sys.exit(0)
+
     # -------------------------------------------------------------------------
     # VERIFY REGISTERS HAVE CORRECT VALUES
     # -------------------------------------------------------------------------
