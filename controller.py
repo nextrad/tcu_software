@@ -190,6 +190,7 @@ def verify_registers():
     logger.debug('reading pre_pulse...')
     reg_pre_pulse_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pre_pulse'))
     logger.debug('pre_pulse:' + reg_pre_pulse_rcv.decode('utf-8'))
+    reg_pre_pulse_rcv = "'"+reg_pre_pulse_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     logger.debug('reading pulses...')
     reg_pulses_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pulses'))
@@ -228,30 +229,36 @@ def verify_registers():
 
         # pre_pulse = eval("0x"+s(reg_pre_pulse_rcv))
         # pri_calc = (pulse_width + pre_pulse + pri_offset) / 1000000000  # PRI in seconds
-        pri_calc = (pulse_width + 3000 + pri_offset) / 1000000000  # PRI in seconds
+        print("pri_calc [ticks] = " + str(pulse_width) + " + 50000 + " + str(pri_offset) + " = " + str(pulse_width + 50000 + pri_offset))
+        pri_calc = (pulse_width + 50000 + pri_offset) / 1000000000  # PRI in seconds
         prf_calc = 1 / pri_calc  # PRF in Hertz
 
         logger.debug('{}\t\t\t\t{}\t\t\t{}\t\t{}\t\t{}\t\t{}'.format(str(pulse_number), str(pulse_width), str(pri_offset), str(mode), str(freq), str(prf_calc)))
 
     logger.debug('reading num_pulses...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_pulses'))
-    logger.debug('num_pulses:' + reg_rcv.decode('utf-8'))
+    reg_num_pulses_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_pulses'))
+    logger.debug('num_pulses:' + reg_num_pulses_rcv.decode('utf-8'))
+    reg_num_pulses_rcv = "'"+reg_num_pulses_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     logger.debug('reading num_repeats...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_repeats'))
-    logger.debug('num_repeats:' + reg_rcv.decode('utf-8'))
+    reg_num_repeats_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_repeats'))
+    logger.debug('num_repeats:' + reg_num_repeats_rcv.decode('utf-8'))
+    reg_num_repeats_rcv = "'"+reg_num_repeats_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     logger.debug('reading x_amp_delay...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'x_amp_delay'))
-    logger.debug('x_amp_delay:' + reg_rcv.decode('utf-8'))
+    reg_x_amp_delay_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'x_amp_delay'))
+    logger.debug('x_amp_delay:' + reg_x_amp_delay_rcv.decode('utf-8'))
+    reg_x_amp_delay_rcv = "'"+reg_x_amp_delay_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     logger.debug('reading l_amp_delay...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'l_amp_delay'))
-    logger.debug('l_amp_delay:' + reg_rcv.decode('utf-8'))
+    reg_l_amp_delay_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'l_amp_delay'))
+    logger.debug('l_amp_delay:' + reg_l_amp_delay_rcv.decode('utf-8'))
+    reg_l_amp_delay_rcv = "'"+reg_l_amp_delay_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     logger.debug('reading pri_pulse_width...')
-    reg_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pri_pulse_width'))
-    logger.debug('pri_pulse_width:' + reg_rcv.decode('utf-8'))
+    reg_pri_pulse_width_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pri_pulse_width'))
+    logger.debug('pri_pulse_width:' + reg_pri_pulse_width_rcv.decode('utf-8'))
+    reg_pri_pulse_width_rcv = "'"+reg_pri_pulse_width_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
 
     # if regs dont match:
     # sys.exit(67)
