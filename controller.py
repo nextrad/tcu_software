@@ -16,10 +16,8 @@
 # ----------------------------------------------------------------------------
 
 import argparse
-import os.path
 import sys
 import time
-import configparser
 import logging
 
 import harpoon
@@ -38,7 +36,6 @@ from parser import TCUParams
 # instruction      0x02
 # pre_pulse        0x02
 
-# num_transfers = int() # used to calculate M
 num_pulses = str()
 num_repeats = str()
 x_amp_delay = str()
@@ -51,13 +48,6 @@ pre_pulse = str()
 
 # CLK_PERIOD_NS = 10
 # CLK_FREQUENCY_HZ = 1 / (CLK_PERIOD_NS * pow(10, -9))
-
-# TODO:
-#      use TCUParams to parse and handle tcu parameters from header file
-
-# pulse dictionary format, 5 parameters per pulse:
-# {"pulse_number": xxx, "pulse width":xxx, "pri_offset":xxx,
-# "frequency": xxx, 'mode':x}
 
 
 logger = logging.getLogger('tcu_project_logger')
