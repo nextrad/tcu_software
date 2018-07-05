@@ -151,10 +151,14 @@ if __name__ == '__main__':
     clargparser.add_argument('-f', '--file',
                              help='header file default [./NeXtRAD.ini]',
                              default='./NeXtRAD.ini')
+    clargparser.add_argument('-o', '--outputfile',
+                             help='output file for exported params [./PulseParameters.ini]',
+                             default='./PulseParameters.ini')
     args = clargparser.parse_args()
     HEADER_FILE = args.file
+    OUTPUT_FILE = args.outputfile
 
-    tcu_params = TCUParams(HEADER_FILE)
+    tcu_params = TCUParams(HEADER_FILE, OUTPUT_FILE)
 
     app = QtWidgets.QApplication(sys.argv)
 

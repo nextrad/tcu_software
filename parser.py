@@ -170,9 +170,10 @@ class HeaderFileParser(object):
 class TCUParams(object):
     """docstring for TCUPulseParams."""
 
-    def __init__(self, headerfile):
+    def __init__(self, headerfile, outputfile='PulseParameters.ini'):
         # clk_period_ns=10, num_pulses=1, num_repeats=1, pri_pulse_width=50, pre_pulse=30, x_amp_delay=3.5, l_amp_delay=1.0, params=list()
         self.hfparser = HeaderFileParser(headerfile)
+        self.outputfilename = outputfile
         params = self.hfparser.get_tcu_params()
         self.clk_period_ns = 10
         self.num_pulses = params['num_pulses']
@@ -239,7 +240,7 @@ class TCUParams(object):
                   'waveform_index':self.waveform_index,
                   'pulses':self.pulses}
         self.hfparser.set_tcu_params(params)
-        self.hfparser.write_header('PulseParameters.ini')
+        self.hfparser.write_header(self.outputfilename)
 
     def to_pulses_string(self):
         pulses = 'PULSES = \"'
