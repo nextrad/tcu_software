@@ -217,17 +217,17 @@ class TCUParams(object):
     def export(self):
         """exports pulse parameters in NeXtRAD.ini format"""
         # TODO: use config parser for this
-        print('NUM_PULSES = {}'.format(self.num_pulses))
-        print('NUM_REPEATS = {}'.format(self.num_repeats))
-        print('PRI_PULSE_WIDTH = {}'.format(self.pri_pulse_width))
-        print('pre_pulse_DELAY = {}'.format(self.pre_pulse))
-        print('X_AMP_DELAY = {}'.format(self.x_amp_delay))
-        print('L_AMP_DELAY = {}'.format(self.l_amp_delay))
-        print('; PULSES = [<PULSE|PULSE|PULSE...>]')
-        print('; PULSE = [<p. width>, <pri>, <mode>, <freq>]')
-        print(self.to_pulses_string())
-        print()
-        self.to_vhdl_snippet()
+        #print('NUM_PULSES = {}'.format(self.num_pulses))
+        #print('NUM_REPEATS = {}'.format(self.num_repeats))
+        #print('PRI_PULSE_WIDTH = {}'.format(self.pri_pulse_width))
+        #print('pre_pulse_DELAY = {}'.format(self.pre_pulse))
+        #print('X_AMP_DELAY = {}'.format(self.x_amp_delay))
+        #print('L_AMP_DELAY = {}'.format(self.l_amp_delay))
+        #print('; PULSES = [<PULSE|PULSE|PULSE...>]')
+        #print('; PULSE = [<p. width>, <pri>, <mode>, <freq>]')
+        #print(self.to_pulses_string())
+        #print()
+        #self.to_vhdl_snippet()
         params = {'num_pulses':self.num_pulses,
                   'num_repeats':self.num_repeats,
                   'pri_pulse_width':self.pri_pulse_width,
