@@ -96,16 +96,16 @@ def parse_header():
     # ensuring num_repeats is 32bit hex number
     if len(num_repeats) == 8:
         # NOTE: change this depending on how num_repeats is stored in HDL
-        num_repeats = '\\x00\\x00' + num_repeats
-        # num_repeats = num_repeats + '\\x00\\x00'
+        # num_repeats = '\\x00\\x00' + num_repeats
+        num_repeats = num_repeats + '\\x00\\x00'
     x_amp_delay = hex_params['x_amp_delay']
     l_amp_delay = hex_params['l_amp_delay']
     pri_pulse_width = hex_params['pri_pulse_width']
     # ensuring pri_pulse_width is 32bit hex number
     if len(pri_pulse_width) == 8:
         # NOTE: change this depending on how pri_pulse_width is stored in HDL
-        pri_pulse_width = '\\x00\\x00' + pri_pulse_width
-        # pri_pulse_width = pri_pulse_width + '\\x00\\x00'
+        # pri_pulse_width = '\\x00\\x00' + pri_pulse_width
+        pri_pulse_width = pri_pulse_width + '\\x00\\x00'
     pulses = hex_params['pulses']
     pre_pulse = hex_params['pre_pulse']
 
@@ -233,7 +233,8 @@ def verify_registers():
         ['x_amp_delay', eval("0x"+reg_x_amp_delay_rcv.replace(" ", "").replace("'", "")), reg_x_amp_delay_rcv])
     ptable_global.add_row(
         ['l_amp_delay', eval("0x"+reg_l_amp_delay_rcv.replace(" ", "").replace("'", "")), reg_l_amp_delay_rcv])
-    print(ptable_global)
+    logger.debug("Global Registers:\n")
+    logger.debug(ptable_global)
 
     # -------------------------------------------------------------------------
     # verifying pulse parameters
@@ -276,16 +277,12 @@ def verify_registers():
 
         pre_pulse = eval("0x"+reg_pre_pulse_rcv.replace(" ", "").replace("'", ""))*CLK_PERIOD_NS
         pri_calc = (pulse_width + pre_pulse + pri_offset) / 1000000000  # PRI in seconds
-        print("pulse_width = " + str(pulse_width))
-        print("pre_pulse = " + str(pre_pulse))
-        print("pri_offset = " + str(pri_offset))
-        print("pri_calc [ticks] = " + str(pulse_width) + " + " + str(pre_pulse) + " + " + str(pri_offset) + " = " + str(pulse_width + pre_pulse + pri_offset))
         prf_calc = 1 / pri_calc  # PRF in Hertz
-
         ptable_pulses.add_row([str(pulse_number), str(pulse_width),
                                str(pri_offset), str(mode), str(freq),
                                str(prf_calc)])
-    print(ptable_pulses)
+    logger.debug("Pulses Register\n")
+    logger.debug(ptable_pulses)
     # TODO: check if registers don't match
     #       sys.exit(67)
 
