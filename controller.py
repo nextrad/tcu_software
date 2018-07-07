@@ -113,8 +113,8 @@ def parse_header():
         # ensuring PRI is 32bit hex number
         if len(pulse['pri']) == 8:
             # NOTE: change this depending on how PRI is stored in HDL
-            pulse['pri'] = '\\x00\\x00' + pulse['pri']
-            # pulse['pri'] = pulse['pri'] + '\\x00\\x00'
+            # pulse['pri'] = '\\x00\\x00' + pulse['pri']
+            pulse['pri'] = pulse['pri'] + '\\x00\\x00'
 
     logging.info('header parsing complete')
 
@@ -195,46 +195,60 @@ def verify_registers():
     reg_num_pulses_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_pulses'))
     logger.debug('num_pulses:' + reg_num_pulses_rcv.decode('utf-8'))
     reg_num_pulses_rcv = "'"+reg_num_pulses_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_num_pulses_rcv.replace("'", "").split(" ")
+    reg_num_pulses_rcv = ("0x" + arr[1] + arr[0])
 
     logger.debug('reading num_repeats...')
     reg_num_repeats_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'num_repeats'))
     logger.debug('num_repeats:' + reg_num_repeats_rcv.decode('utf-8'))
     reg_num_repeats_rcv = "'"+reg_num_repeats_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_num_repeats_rcv.replace("'", "").split(" ")
+    reg_num_repeats_rcv = ("0x" + arr[2] + arr[1])
 
     logger.debug('reading x_amp_delay...')
     reg_x_amp_delay_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'x_amp_delay'))
     logger.debug('x_amp_delay:' + reg_x_amp_delay_rcv.decode('utf-8'))
     reg_x_amp_delay_rcv = "'"+reg_x_amp_delay_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_x_amp_delay_rcv.replace("'", "").split(" ")
+    reg_x_amp_delay_rcv = ("0x" + arr[1] + arr[0])
 
     logger.debug('reading l_amp_delay...')
     reg_l_amp_delay_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'l_amp_delay'))
     logger.debug('l_amp_delay:' + reg_l_amp_delay_rcv.decode('utf-8'))
     reg_l_amp_delay_rcv = "'"+reg_l_amp_delay_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_l_amp_delay_rcv.replace("'", "").split(" ")
+    reg_l_amp_delay_rcv = ("0x" + arr[1] + arr[0])
 
     logger.debug('reading pri_pulse_width...')
     reg_pri_pulse_width_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pri_pulse_width'))
     logger.debug('pri_pulse_width:' + reg_pri_pulse_width_rcv.decode('utf-8'))
     reg_pri_pulse_width_rcv = "'"+reg_pri_pulse_width_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_pri_pulse_width_rcv.replace("'", "").split(" ")
+    reg_pri_pulse_width_rcv = ("0x" + arr[2] + arr[1])
 
     logger.debug('reading pre_pulse...')
     reg_pre_pulse_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pre_pulse'))
     logger.debug('pre_pulse:' + reg_pre_pulse_rcv.decode('utf-8'))
     reg_pre_pulse_rcv = "'"+reg_pre_pulse_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_pre_pulse_rcv.replace("'", "").split(" ")
+    reg_pre_pulse_rcv = ("0x" + arr[1] + arr[0])
 
     ptable_global = prettytable.PrettyTable()
     ptable_global.field_names = ['Parameter', 'Value', 'Hex Cycles [big endian]']
     ptable_global.align['Parameter'] = 'l'
-    ptable_global.add_row(['num_pulses', eval("0x"+reg_num_pulses_rcv.replace(" ", "").replace("'", "")), reg_num_pulses_rcv])
-    ptable_global.add_row(['num_repeats', eval("0x"+reg_num_repeats_rcv.replace(" ", "").replace("'", "")), reg_num_repeats_rcv])
+    ptable_global.add_row(['num_pulses', eval(reg_num_pulses_rcv), reg_num_pulses_rcv])
+
+    ptable_global.add_row(['num_repeats', eval(reg_num_repeats_rcv), reg_num_repeats_rcv])
+
     ptable_global.add_row(
-        ['pri_pulse_width', eval("0x"+reg_pri_pulse_width_rcv.replace(" ", "").replace("'", "")), reg_pri_pulse_width_rcv])
-    ptable_global.add_row(['pre_pulse', eval("0x"+reg_pre_pulse_rcv.replace(" ", "").replace("'", "")), reg_pre_pulse_rcv])
+        ['pri_pulse_width', eval(reg_pri_pulse_width_rcv), reg_pri_pulse_width_rcv])
+    ptable_global.add_row(['pre_pulse', eval(reg_pre_pulse_rcv), reg_pre_pulse_rcv])
     ptable_global.add_row(
-        ['x_amp_delay', eval("0x"+reg_x_amp_delay_rcv.replace(" ", "").replace("'", "")), reg_x_amp_delay_rcv])
+        ['x_amp_delay', eval(reg_x_amp_delay_rcv), reg_x_amp_delay_rcv])
     ptable_global.add_row(
-        ['l_amp_delay', eval("0x"+reg_l_amp_delay_rcv.replace(" ", "").replace("'", "")), reg_l_amp_delay_rcv])
-    logger.debug("Global Registers:\n")
-    logger.debug(ptable_global)
+        ['l_amp_delay', eval(reg_l_amp_delay_rcv), reg_l_amp_delay_rcv])
+    logger.debug("Global Registers:")
+    logger.debug("\n"+str(ptable_global))
 
     # -------------------------------------------------------------------------
     # verifying pulse parameters
@@ -259,13 +273,13 @@ def verify_registers():
     ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRIoffset',
                                  'Mode', 'Frequency', "PRF[Hz]"]
 
-    for pulse_number in range(eval("0x"+reg_num_pulses_rcv.replace(" ", "").replace("'", ""))):
+    for pulse_number in range(eval(reg_num_pulses_rcv)):
 
         pulse_width = read_data_array[((pulse_number*5)+0)]
         pulse_width = eval("0x"+pulse_width)*CLK_PERIOD_NS
 
-        pri_upper = read_data_array[((pulse_number*5)+1)]
-        pri_lower = read_data_array[((pulse_number*5)+2)]
+        pri_lower = read_data_array[((pulse_number*5)+1)]
+        pri_upper = read_data_array[((pulse_number*5)+2)]
         pri_offset = eval("0x"+pri_upper+pri_lower)*CLK_PERIOD_NS
 
         mode = read_data_array[((pulse_number*5)+3)]
@@ -275,14 +289,14 @@ def verify_registers():
         freq = freq[2:4] + freq[0:2]
         freq = eval("0x"+freq)
 
-        pre_pulse = eval("0x"+reg_pre_pulse_rcv.replace(" ", "").replace("'", ""))*CLK_PERIOD_NS
+        pre_pulse = eval(reg_pre_pulse_rcv)*CLK_PERIOD_NS
         pri_calc = (pulse_width + pre_pulse + pri_offset) / 1000000000  # PRI in seconds
         prf_calc = 1 / pri_calc  # PRF in Hertz
         ptable_pulses.add_row([str(pulse_number), str(pulse_width),
                                str(pri_offset), str(mode), str(freq),
                                str(prf_calc)])
-    logger.debug("Pulses Register\n")
-    logger.debug(ptable_pulses)
+    logger.debug("Pulses Register")
+    logger.debug("\n"+str(ptable_pulses))
     # TODO: check if registers don't match
     #       sys.exit(67)
 
