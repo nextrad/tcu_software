@@ -298,10 +298,10 @@ class TCUParams(object):
     def get_hex_params(self, hdl_format=False):
         """returns a dictionary of parameters in hex string format"""
         hex_params = dict()
-        hex_params['num_pulses'] = self._int_to_hex_str(self.num_pulses, hdl=hdl_format, big_endian=hdl_format)
+        hex_params['num_pulses'] = self._int_to_hex_str(self.num_pulses, hdl=hdl_format, big_endian=hdl_format, bytes=4)
         hex_params['num_repeats'] = self._int_to_hex_str(self.num_repeats, hdl=hdl_format, big_endian=hdl_format)
         pri_pulse_width = (self._to_clock_ticks(self.pri_pulse_width))
-        hex_params['pri_pulse_width'] = self._int_to_hex_str(pri_pulse_width, hdl=hdl_format, big_endian=hdl_format)
+        hex_params['pri_pulse_width'] = self._int_to_hex_str(pri_pulse_width, hdl=hdl_format, big_endian=hdl_format, bytes=4)
         pre_pulse = (self._to_clock_ticks(self.pre_pulse))
         hex_params['pre_pulse'] = self._int_to_hex_str(pre_pulse, hdl=hdl_format, big_endian=hdl_format)
         x_amp_delay = (self._to_clock_ticks(self.x_amp_delay))
@@ -314,7 +314,7 @@ class TCUParams(object):
             pri = self._to_clock_ticks(pulse['pri'])
             pri_offset = pri - pre_pulse - pulse_width
             hex_params['pulses'].append({'pulse_width': self._int_to_hex_str(pulse_width, hdl=hdl_format, big_endian=hdl_format),
-                                         'pri': self._int_to_hex_str(pri_offset, hdl=hdl_format, big_endian=hdl_format),
+                                         'pri': self._int_to_hex_str(pri_offset, hdl=hdl_format, big_endian=hdl_format, bytes=4),
                                          'pol_mode': self._int_to_hex_str(int(pulse['pol_mode']), hdl=hdl_format, big_endian=hdl_format),
                                          'frequency': self._int_to_hex_str(int(pulse['frequency']), hdl=hdl_format, big_endian=(not hdl_format))})
 
@@ -325,40 +325,40 @@ class TCUParams(object):
         # NOTE: assumes inputs are in microseconds
         return(int(x * 1000 // self.clk_period_ns))
 
-    def _int_to_hex_str(self, num, big_endian=False, hdl=False):
+    def _int_to_hex_str(self, num, bytes=2, big_endian=False, hdl=False):
         """ returns a hexidecimal string in format given an integer
             endianess:
                 default is LITTLE endian
                 for big endian, pass 'big_endian = True' as an argument
         """
+        if bytes % 2 != 0:
+            raise ValueError('i can only do even byte sizes')
         hex_num = hex(num)
         hex_num = hex_num.replace('0x', '')
         num_zeros_to_pad = 0
-        if len(hex_num) % 4 != 0:
-            num_zeros_to_pad = 4 - len(hex_num) % 4
+        if len(hex_num) % (bytes*2) != 0:
+            num_zeros_to_pad = (bytes*2) - len(hex_num) % (bytes*2)
         hex_num = '0' * num_zeros_to_pad + hex_num
         num_bytes = len(hex_num) // 2
-        num_words = num_bytes // 2
         byte_list = list()
         index = 0
-        for count in range(num_words):
-            byte_upper = hex_num[index: index + 2]
-            byte_lower = hex_num[index + 2: index + 4]
-            if big_endian:
-                byte_list.append([byte_upper, byte_lower])
-            else:
-                byte_list.append([byte_lower, byte_upper])
-            index += 4
+        for count in range(num_bytes):
+            byte_list.append(hex_num[index: index + 2])
+            index += 2
+
+        if not big_endian:
+            byte_list.reverse()
 
         hex_str = str()
-        if hdl:
-            hex_str += 'x\"'
-            for word in byte_list:
-                hex_str += word[0] + word[1]
-            hex_str += '\"'
+        if not hdl:
+            for byte in byte_list:
+                hex_str += '\\x' + byte
         else:
-            for word in byte_list:
-                hex_str += '\\x' + word[0] + '\\x' + word[1]
+            hex_str += 'x\"'
+            for byte in byte_list:
+                hex_str += byte
+            hex_str += '\"'
+
         return hex_str
 
 
