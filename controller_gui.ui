@@ -178,10 +178,10 @@
         <widget class="QLabel" name="label_2">
          <property name="font">
           <font>
-           <family>Courier 10 Pitch</family>
+           <family>DejaVu Sans</family>
            <pointsize>64</pointsize>
-           <weight>75</weight>
-           <bold>true</bold>
+           <weight>50</weight>
+           <bold>false</bold>
           </font>
          </property>
          <property name="text">
@@ -270,22 +270,45 @@
          <property name="frameShadow">
           <enum>QFrame::Raised</enum>
          </property>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QPushButton" name="but_connect">
-            <property name="text">
-             <string>CONNECT</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="but_refresh">
-            <property name="text">
-             <string>REFRESH</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
+         <widget class="QPushButton" name="but_connect">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>10</y>
+            <width>85</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>CONNECT</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="but_refresh">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>40</y>
+            <width>85</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>REFRESH</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="but_initialise">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>70</y>
+            <width>85</width>
+            <height>26</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>INITIALISE</string>
+          </property>
+         </widget>
         </widget>
        </item>
       </layout>
@@ -433,6 +456,26 @@
           </item>
           <item row="5" column="1">
            <widget class="QLineEdit" name="txt_l_amp_delay">
+            <property name="minimumSize">
+             <size>
+              <width>55</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_15">
+            <property name="text">
+             <string>REX DELAY [μs]</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLineEdit" name="txt_rex_delay">
             <property name="minimumSize">
              <size>
               <width>55</width>
