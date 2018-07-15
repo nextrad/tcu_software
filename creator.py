@@ -87,6 +87,7 @@ class Creator(Ui_MainWindow):
             frequency = eval(self.table_pulse_params.item(row, 3).text())
         self.tcu_params.export()
         print("exported")
+        window.close()
 
     # TODO: this needs to be fixed, what gets updated first? table or object?
     def add_pulse(self):
