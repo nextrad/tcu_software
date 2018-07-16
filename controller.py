@@ -157,6 +157,18 @@ def launch_bof():
             fpga_con.program(BOF_EXE)
 
 
+def kill_bof():
+    logger.debug('checking for any prexisting running .bof executables')
+    existing_bof_proc = fpga_con._action("ps -o pid,args | grep [.]bof | while read c1 c2; do echo $c1; done")
+    existing_bof_proc = (existing_bof_proc.decode('utf8').split("\r\n"))[1]
+
+    if existing_bof_proc != '':
+        logger.debug('kill {}'.format(existing_bof_proc))
+        fpga_con._action('kill {}'.format(existing_bof_proc))
+    else:
+        logger.debug('no existing running .bof found, nothing to kill')
+
+
 def write_registers():
     # TODO: implement framework functionality:
     #       core_tcu.write_reg('pulses', pulses)
@@ -375,7 +387,8 @@ if __name__ == '__main__':
                                      description='Startup script for the '
                                                  'NeXtRAD Timing Control Unit')
     parser.add_argument('address', help='IP address of TCU')
-    parser.add_argument('file', help="header file")
+    parser.add_argument('-f', '--file', help='header file to load parameters '
+                        '[./NeXTRAD.ini]', default='./NeXTRAD.ini')
     parser.add_argument('-b', '--bof', help='name of .bof file to be executed '
                         'on RHINO [\'tcu_v2-1.bof\']', default='tcu_v2-1.bof')
     parser.add_argument('-t', '--timeout', help='login timeout (seconds) to '
@@ -383,6 +396,8 @@ if __name__ == '__main__':
                         type=int, default=30)
     parser.add_argument('-l', '--logdir', help='directory to store log file '
                         '[\'/tmp\']', default='/tmp')
+    parser.add_argument('-k', '--kill', help='kill running .bof',
+                        action="store_true", default=False)
     args = parser.parse_args()
 
     init_logger()
@@ -393,72 +408,86 @@ if __name__ == '__main__':
     HEADER_FILE = args.file
     TCU_ADDRESS = args.address
     BOF_EXE = args.bof  # NOTE: assumes .bof must already be in /opt/rhinofs/
+    if args.kill:
+        # -------------------------------------------------------------------------
+        # CONNECT TO RHINO
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('CONNECTING TO TCU...')
+        logger.debug('........................')
+        connect()
 
-    logger.info('initializing TCU at IP [{}] with header file at [{}], '
-                'this should take a moment...'
-                .format(TCU_ADDRESS, HEADER_FILE))
+        logger.debug('........................')
+        logger.debug('KILLING .BOF ...')
+        logger.debug('........................')
+        kill_bof()
 
-    # -------------------------------------------------------------------------
-    # EXTRACT PARAMETERS FROM HEADER FILE
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('PARSING HEADERFILE...')
-    logger.debug('........................')
-    parse_header()
+    else:
+        logger.info('initializing TCU at IP [{}] with header file at [{}], '
+                    'this should take a moment...'
+                    .format(TCU_ADDRESS, HEADER_FILE))
 
-    # -------------------------------------------------------------------------
-    # CONNECT TO RHINO
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('CONNECTING TO TCU...')
-    logger.debug('........................')
-    connect()
+        # -------------------------------------------------------------------------
+        # EXTRACT PARAMETERS FROM HEADER FILE
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('PARSING HEADERFILE...')
+        logger.debug('........................')
+        parse_header()
 
-    # -------------------------------------------------------------------------
-    # CONNECT TO RHINO
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('POWERING FMC0...')
-    logger.debug('........................')
-    power_fmc()
+        # -------------------------------------------------------------------------
+        # CONNECT TO RHINO
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('CONNECTING TO TCU...')
+        logger.debug('........................')
+        connect()
 
-    # -------------------------------------------------------------------------
-    # CONFIGURE RHINO WITH TCU PROJECT
-    # -------------------------------------------------------------------------
-    logger.debug('launching TCU .bof...')
-    launch_bof()
+        # -------------------------------------------------------------------------
+        # CONNECT TO RHINO
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('POWERING FMC0...')
+        logger.debug('........................')
+        power_fmc()
 
-    # -------------------------------------------------------------------------
-    # SEND PARAMETERS TO TCU
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('SENDING PARAMS TO TCU...')
-    logger.debug('........................')
-    write_registers()
+        # -------------------------------------------------------------------------
+        # CONFIGURE RHINO WITH TCU PROJECT
+        # -------------------------------------------------------------------------
+        logger.debug('launching TCU .bof...')
+        launch_bof()
 
-    # -------------------------------------------------------------------------
-    # VERIFY REGISTERS HAVE CORRECT VALUES
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('VERYFYING TCU REGISTERS...')
-    logger.debug('........................')
-    verify_registers()
+        # -------------------------------------------------------------------------
+        # SEND PARAMETERS TO TCU
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('SENDING PARAMS TO TCU...')
+        logger.debug('........................')
+        write_registers()
 
-    # -------------------------------------------------------------------------
-    # ARM THE TCU
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('ARMING TCU...')
-    logger.debug('........................')
-    arm_tcu()
+        # -------------------------------------------------------------------------
+        # VERIFY REGISTERS HAVE CORRECT VALUES
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('VERYFYING TCU REGISTERS...')
+        logger.debug('........................')
+        verify_registers()
 
-    # -------------------------------------------------------------------------
-    # CLOSE SSH CONNECTION
-    # -------------------------------------------------------------------------
-    logger.debug('........................')
-    logger.debug('CLOSING SSH CONNECTION...')
-    logger.debug('........................')
-    fpga_con.disconnect()
+        # -------------------------------------------------------------------------
+        # ARM THE TCU
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('ARMING TCU...')
+        logger.debug('........................')
+        arm_tcu()
+
+        # -------------------------------------------------------------------------
+        # CLOSE SSH CONNECTION
+        # -------------------------------------------------------------------------
+        logger.debug('........................')
+        logger.debug('CLOSING SSH CONNECTION...')
+        logger.debug('........................')
+        fpga_con.disconnect()
 
     logger.info('script completed successfully')
     sys.exit(0)
