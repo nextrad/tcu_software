@@ -13,6 +13,7 @@ import argparse
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+import datetime
 
 from creator_gui import Ui_MainWindow
 from parser import TCUParams
@@ -26,9 +27,14 @@ class Creator(Ui_MainWindow):
         self.setupUi(window)
         self.tcu_params = tcu_params
         self.button_export.clicked.connect(self.export)
+        self.button_export_close.clicked.connect(self.export_close)
         self.button_add_pulse.clicked.connect(self.add_pulse)
+        self.button_add_pulse.clicked.connect(self.update_metadata)
         self.button_remove_pulse.clicked.connect(self.remove_pulse)
         self.spin_num_pulses.valueChanged.connect(self.update_table)
+        self.spin_num_pulses.valueChanged.connect(self.update_metadata)
+        self.spin_num_repeats.valueChanged.connect(self.update_metadata)
+        self.spin_samples_per_pri.valueChanged.connect(self.update_metadata)
     #     self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
     #
     # def select_row(self):
@@ -42,6 +48,7 @@ class Creator(Ui_MainWindow):
         self.spin_prepulse.setProperty("value", self.tcu_params.pre_pulse)
         self.spin_x_amp_delay.setProperty("value", self.tcu_params.x_amp_delay)
         self.spin_l_amp_delay.setProperty("value", self.tcu_params.l_amp_delay)
+        self.spin_rex_delay.setProperty("value", self.tcu_params.rex_delay)
         self.spin_dac_delay.setProperty("value", self.tcu_params.dac_delay)
         self.spin_adc_delay.setProperty("value", self.tcu_params.adc_delay)
         self.spin_samples_per_pri.setProperty("value", self.tcu_params.samples_per_pri)
@@ -74,6 +81,7 @@ class Creator(Ui_MainWindow):
         self.tcu_params.pre_pulse = self.spin_prepulse.value()
         self.tcu_params.x_amp_delay = self.spin_x_amp_delay.value()
         self.tcu_params.l_amp_delay = self.spin_l_amp_delay.value()
+        self.tcu_params.rex_delay = self.spin_rex_delay.value()
         self.tcu_params.dac_delay = self.spin_dac_delay.value()
         self.tcu_params.adc_delay = self.spin_adc_delay.value()
         self.tcu_params.samples_per_pri = self.spin_samples_per_pri.value()
@@ -87,6 +95,9 @@ class Creator(Ui_MainWindow):
             frequency = eval(self.table_pulse_params.item(row, 3).text())
         self.tcu_params.export()
         print("exported")
+
+    def export_close(self):
+        self.export()
         window.close()
 
     # TODO: this needs to be fixed, what gets updated first? table or object?
@@ -126,8 +137,10 @@ class Creator(Ui_MainWindow):
         if len(self.tcu_params.pulses) > 0:
             self.table_pulse_params.selectRow(len(self.tcu_params.pulses) - 1)
             self.button_export.setEnabled(True)
+            self.button_export_close.setEnabled(True)
         else:
             self.button_export.setEnabled(False)
+            self.button_export_close.setEnabled(False)
 
         if len(self.tcu_params.pulses) < self.spin_num_pulses.value():
             self.button_add_pulse.setEnabled(True)
@@ -140,6 +153,29 @@ class Creator(Ui_MainWindow):
             self.button_remove_pulse.setEnabled(False)
 
         self.spin_num_pulses.setMinimum(len(self.tcu_params.pulses))
+
+    def update_metadata(self):
+        samples_per_pri = self.spin_samples_per_pri.value()
+        num_pulses = self.spin_num_pulses.value()
+        num_repeats = self.spin_num_repeats.value()
+        time_block_microseconds = 0
+        for pulse in self.tcu_params.pulses:
+            time_block_microseconds += pulse['pri']
+        time_experiment_microseconds = time_block_microseconds * num_repeats
+        time_experiment_seconds = time_experiment_microseconds / 1000000
+
+        # print('samples_per_pri = ' + str(samples_per_pri))
+        # print('num_pulses = ' + str(num_pulses))
+        # print('num_repeats = ' + str(num_repeats))
+        # print('time_block = ' + str(time_block_microseconds))
+        # print('time_experiment_microseconds = ' + str(time_experiment_microseconds))
+        # print('time_experiment_seconds = ' + str(time_experiment_seconds))
+        # time_experiment_minutes = time_experiment_seconds/60
+        # print('time_experiment_minutes = ' + str(time_experiment_minutes))
+        # time_experiment_hours = time_experiment_minutes/60
+        # print('time_experiment_hours = ' + str(time_experiment_hours))
+        # TODO: clip values over 24 hrs
+        self.lcdNumber_time.display(str(datetime.timedelta(seconds=time_experiment_seconds)))
 
 
 if __name__ == '__main__':
