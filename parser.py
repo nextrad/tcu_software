@@ -16,6 +16,7 @@ class HeaderFileParser(object):
                                                'PRI_PULSE_WIDTH': '0',
                                                'X_AMP_DELAY': '0',
                                                'L_AMP_DELAY': '0',
+                                               'REX_DELAY': '0',
                                                'DAC_DELAY': '0',
                                                'ADC_DELAY': '0',
                                                'SAMPLES_PER_PRI': '0',
@@ -31,6 +32,7 @@ class HeaderFileParser(object):
         params += 'pri_pulse_width: ' + str(self.file_parser['PulseParameters']['PRI_PULSE_WIDTH']) + '\n'
         params += 'x_amp_delay: ' + str(self.file_parser['PulseParameters']['X_AMP_DELAY']) + '\n'
         params += 'l_amp_delay: ' + str(self.file_parser['PulseParameters']['L_AMP_DELAY']) + '\n'
+        params += 'rex_delay: ' + str(self.file_parser['PulseParameters']['REX_DELAY']) + '\n'
         params += 'dac_delay: ' + str(self.file_parser['PulseParameters']['DAC_DELAY']) + '\n'
         params += 'adc_delay: ' + str(self.file_parser['PulseParameters']['ADC_DELAY']) + '\n'
         params += 'samples_per_pri: ' + str(self.file_parser['PulseParameters']['SAMPLES_PER_PRI']) + '\n'
@@ -60,6 +62,7 @@ class HeaderFileParser(object):
                 'pre_pulse'         ->  float
                 'x_amp_delay'       ->  float
                 'l_amp_delay'       ->  float
+                'rex_delay'         ->  float
                 'pulses'            ->  list of dictionary types containing:
                                             'pri'           ->  float
                                             'pol_mode'      ->  int
@@ -87,6 +90,7 @@ class HeaderFileParser(object):
             tcu_params['pre_pulse'] = eval(self._extract_param('PRE_PULSE'))
             tcu_params['x_amp_delay'] = eval(self._extract_param('X_AMP_DELAY'))
             tcu_params['l_amp_delay'] = eval(self._extract_param('L_AMP_DELAY'))
+            tcu_params['rex_delay'] = eval(self._extract_param('REX_DELAY'))
             tcu_params['dac_delay'] = eval(self._extract_param('DAC_DELAY'))
             tcu_params['adc_delay'] = eval(self._extract_param('ADC_DELAY'))
             tcu_params['samples_per_pri'] = eval(self._extract_param('SAMPLES_PER_PRI'))
@@ -139,6 +143,7 @@ class HeaderFileParser(object):
                 'pre_pulse'         ->  float
                 'x_amp_delay'       ->  float
                 'l_amp_delay'       ->  float
+                'rex_delay'         ->  float
                 'pulses'            ->  list of dictionary types containing:
                                             'pri'           ->  float
                                             'pol_mode'      ->  int
@@ -161,6 +166,7 @@ class HeaderFileParser(object):
         self.file_parser['PulseParameters']['PRE_PULSE'] = str(params['pre_pulse'])
         self.file_parser['PulseParameters']['X_AMP_DELAY'] = str(params['x_amp_delay'])
         self.file_parser['PulseParameters']['L_AMP_DELAY'] = str(params['l_amp_delay'])
+        self.file_parser['PulseParameters']['REX_DELAY'] = str(params['rex_delay'])
         self.file_parser['PulseParameters']['DAC_DELAY'] = str(params['dac_delay'])
         self.file_parser['PulseParameters']['ADC_DELAY'] = str(params['adc_delay'])
         self.file_parser['PulseParameters']['SAMPLES_PER_PRI'] = str(params['samples_per_pri'])
@@ -182,6 +188,7 @@ class TCUParams(object):
         self.pre_pulse = params['pre_pulse']
         self.x_amp_delay = params['x_amp_delay']
         self.l_amp_delay = params['l_amp_delay']
+        self.rex_delay = params['rex_delay']
         self.pulses = params['pulses']
         self.dac_delay = params['dac_delay']
         self.adc_delay = params['adc_delay']
@@ -202,6 +209,8 @@ class TCUParams(object):
             ['x_amp_delay', self.x_amp_delay, hex_params['x_amp_delay']])
         ptable_global.add_row(
             ['l_amp_delay', self.l_amp_delay, hex_params['l_amp_delay']])
+        ptable_global.add_row(
+            ['rex_delay', self.rex_delay, hex_params['rex_delay']])
 
         ptable_pulses = prettytable.PrettyTable()
         ptable_pulses.field_names = ['Pulse Number', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
@@ -234,6 +243,7 @@ class TCUParams(object):
                   'pre_pulse':self.pre_pulse,
                   'x_amp_delay':self.x_amp_delay,
                   'l_amp_delay':self.l_amp_delay,
+                  'rex_delay':self.rex_delay,
                   'dac_delay':self.dac_delay,
                   'adc_delay':self.adc_delay,
                   'samples_per_pri':self.samples_per_pri,
@@ -276,6 +286,9 @@ class TCUParams(object):
         l_amp_delay = (self._to_clock_ticks(self.l_amp_delay))
         l_amp_delay_hex_str = self._int_to_hex_str(l_amp_delay, big_endian=True, hdl=True)
         print('l_amp_delay_reg <= {};\t\t-- {}'.format(l_amp_delay_hex_str, self.l_amp_delay))
+        rex_delay = (self._to_clock_ticks(self.rex_delay))
+        rex_delay_hex_str = self._int_to_hex_str(rex_delay, big_endian=True, hdl=True)
+        print('rex_delay_reg <= {};\t\t-- {}'.format(rex_delay_hex_str, self.rex_delay))
 
         print('-'*100)
         print()
@@ -308,6 +321,8 @@ class TCUParams(object):
         hex_params['x_amp_delay'] = self._int_to_hex_str(x_amp_delay, hdl=hdl_format, big_endian=hdl_format)
         l_amp_delay = (self._to_clock_ticks(self.l_amp_delay))
         hex_params['l_amp_delay'] = self._int_to_hex_str(l_amp_delay, hdl=hdl_format, big_endian=hdl_format)
+        rex_delay = (self._to_clock_ticks(self.rex_delay))
+        hex_params['rex_delay'] = self._int_to_hex_str(rex_delay, hdl=hdl_format, big_endian=hdl_format)
         hex_params['pulses'] = list()
         for index, pulse in enumerate(self.pulses):
             pulse_width = self._to_clock_ticks(pulse['pulse_width'])
@@ -368,6 +383,7 @@ if __name__ == '__main__':
     test_params = {'pre_pulse': 30,
                    'x_amp_delay': 3.5,
                    'l_amp_delay': 1.0,
+                   'rex_delay': 1.0,
                    'dac_delay': 1,
                    'adc_delay': 372,
                    'samples_per_pri': 2048,

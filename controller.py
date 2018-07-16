@@ -41,6 +41,7 @@ num_pulses = str()
 num_repeats = str()
 x_amp_delay = str()
 l_amp_delay = str()
+rex_delay = str()
 pri_pulse_width = str()
 pulses = list()
 status = str()
@@ -84,6 +85,7 @@ def parse_header():
     global num_repeats
     global x_amp_delay
     global l_amp_delay
+    global rex_delay
     global pri_pulse_width
     global pulses
     global status
@@ -100,6 +102,7 @@ def parse_header():
         num_repeats = num_repeats + '\\x00\\x00'
     x_amp_delay = hex_params['x_amp_delay']
     l_amp_delay = hex_params['l_amp_delay']
+    rex_delay = hex_params['rex_delay']
     pri_pulse_width = hex_params['pri_pulse_width']
     # ensuring pri_pulse_width is 32bit hex number
     if len(pri_pulse_width) == 8:
@@ -179,6 +182,9 @@ def write_registers():
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(l_amp_delay, fpga_con._pid, 'l_amp_delay'))
 
+    logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(rex_delay, fpga_con._pid, 'rex_delay'))
+    fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(rex_delay, fpga_con._pid, 'rex_delay'))
+
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format(pri_pulse_width, fpga_con._pid, 'pri_pulse_width'))
 
@@ -219,6 +225,13 @@ def verify_registers():
     arr = reg_l_amp_delay_rcv.replace("'", "").split(" ")
     reg_l_amp_delay_rcv = ("0x" + arr[1] + arr[0])
 
+    logger.debug('reading rex_delay...')
+    reg_rex_delay_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'rex_delay'))
+    logger.debug('rex_delay:' + reg_rex_delay_rcv.decode('utf-8'))
+    reg_rex_delay_rcv = "'"+reg_rex_delay_rcv.decode('utf-8').split("\r\n")[1:-1:][0]+"'"
+    arr = reg_rex_delay_rcv.replace("'", "").split(" ")
+    reg_rex_delay_rcv = ("0x" + arr[1] + arr[0])
+
     logger.debug('reading pri_pulse_width...')
     reg_pri_pulse_width_rcv = fpga_con._action('od -x -An /proc/{}/hw/ioreg/{}'.format(fpga_con._pid, 'pri_pulse_width'))
     logger.debug('pri_pulse_width:' + reg_pri_pulse_width_rcv.decode('utf-8'))
@@ -247,6 +260,8 @@ def verify_registers():
         ['x_amp_delay', eval(reg_x_amp_delay_rcv), reg_x_amp_delay_rcv])
     ptable_global.add_row(
         ['l_amp_delay', eval(reg_l_amp_delay_rcv), reg_l_amp_delay_rcv])
+    ptable_global.add_row(
+        ['rex_delay', eval(reg_rex_delay_rcv), reg_rex_delay_rcv])
     logger.debug("Global Registers:")
     logger.debug("\n"+str(ptable_global))
 
@@ -307,6 +322,11 @@ def arm_tcu():
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
     logger.debug('TCU armed')
+
+
+def power_fmc():
+    logger.debug('calling power_fmc.sh script...')
+    fpga_con._action('./power_fmc.sh')
 
 # TODO: incorporate this:
 # -----------------------------------------------------------------------------
@@ -393,6 +413,14 @@ if __name__ == '__main__':
     logger.debug('CONNECTING TO TCU...')
     logger.debug('........................')
     connect()
+
+    # -------------------------------------------------------------------------
+    # CONNECT TO RHINO
+    # -------------------------------------------------------------------------
+    logger.debug('........................')
+    logger.debug('POWERING FMC0...')
+    logger.debug('........................')
+    power_fmc()
 
     # -------------------------------------------------------------------------
     # CONFIGURE RHINO WITH TCU PROJECT
