@@ -78,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--gui', action="store_true", default=False)
     args = parser.parse_args()
 
-    if args.gui == True:
+    if args.gui is True:
         app = QtWidgets.QApplication(sys.argv)
 
         window = QtWidgets.QMainWindow()
