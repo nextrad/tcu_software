@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'creator_gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.10.1
+# Created by: PyQt5 UI code generator 5.10
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(672, 503)
+        MainWindow.resize(672, 478)
         MainWindow.setAutoFillBackground(False)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -230,14 +230,14 @@ class Ui_MainWindow(object):
         self.label_17.setGeometry(QtCore.QRect(10, 10, 102, 17))
         self.label_17.setObjectName("label_17")
         self.lcdNumber_time = QtWidgets.QLCDNumber(self.frame_2)
-        self.lcdNumber_time.setGeometry(QtCore.QRect(118, 10, 101, 27))
+        self.lcdNumber_time.setGeometry(QtCore.QRect(118, 10, 101, 31))
         self.lcdNumber_time.setDigitCount(8)
         self.lcdNumber_time.setObjectName("lcdNumber_time")
         self.label_18 = QtWidgets.QLabel(self.frame_2)
         self.label_18.setGeometry(QtCore.QRect(230, 10, 55, 17))
         self.label_18.setObjectName("label_18")
         self.lcdNumber_size = QtWidgets.QLCDNumber(self.frame_2)
-        self.lcdNumber_size.setGeometry(QtCore.QRect(305, 10, 64, 23))
+        self.lcdNumber_size.setGeometry(QtCore.QRect(288, 10, 81, 31))
         self.lcdNumber_size.setObjectName("lcdNumber_size")
         self.gridLayout.addWidget(self.frame_2, 3, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)

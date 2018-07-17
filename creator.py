@@ -163,6 +163,11 @@ class Creator(Ui_MainWindow):
             time_block_microseconds += pulse['pri']
         time_experiment_microseconds = time_block_microseconds * num_repeats
         time_experiment_seconds = time_experiment_microseconds / 1000000
+        num_pris = num_pulses * num_repeats
+        num_samples = num_pris * samples_per_pri
+        experiment_size_bits = num_samples * 32
+        experiment_size_bytes = experiment_size_bits // 8
+        experiment_megabytes = experiment_size_bytes // (1024*1024)
 
         # print('samples_per_pri = ' + str(samples_per_pri))
         # print('num_pulses = ' + str(num_pulses))
@@ -175,7 +180,11 @@ class Creator(Ui_MainWindow):
         # time_experiment_hours = time_experiment_minutes/60
         # print('time_experiment_hours = ' + str(time_experiment_hours))
         # TODO: clip values over 24 hrs
-        self.lcdNumber_time.display(str(datetime.timedelta(seconds=time_experiment_seconds)))
+        if time_experiment_seconds < 86400:
+            self.lcdNumber_time.display(str(datetime.timedelta(seconds=int(time_experiment_seconds))))
+        else:
+            self.lcdNumber_time.display('large')
+        self.lcdNumber_size.display(str(experiment_megabytes))
 
 
 if __name__ == '__main__':
