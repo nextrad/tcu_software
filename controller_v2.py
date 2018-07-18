@@ -1,9 +1,68 @@
 import sys
 import argparse
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+
 from controller_gui import Ui_MainWindow
 import harpoon
+from harpoon.boardsupport import borph
+
+
+class TCUController(harpoon.Project):
+    def __init__(self,
+                 name='tcu_controller',
+                 description='project to communicate with the RHINO-TCU',
+                 cores=list(),
+                 address='192.168.1.36',
+                 headerfile='PulseParameters.ini',
+                 bof_exe='tcu_v2-1.bof'):
+
+        harpoon.Project.__init__(self, name, description, cores)
+        self.address = address
+        self.headerfile = headerfile
+        self.bof_exe = bof_exe
+        self.fpga_con = borph.RHINO(address=self.address,
+                                    username='root',
+                                    password='rhino',
+                                    login_timeout=30)
+
+    def connect(self):
+        print('initializing rhino connection, IP address: ' + self.address)
+        print('attempting to connect...')
+        try:
+            self.fpga_con.connect()
+        except Exception as e:
+            print('failed to connect to rhino')
+            sys.exit(66)
+        print('connection successful!')
+
+    def disconnect(self):
+        try:
+            self.fpga_con.disconnect()
+        except Exception as e:
+            print('failed to disconnect from rhino')
+            sys.exit(66)
+        print('disconnect successful!')
+
+    def launch_bof(self):
+        # TODO: this assumes that there is no other .bof running on the RHINO
+        #       scan for any .bof running on
+        if self.fpga_con._pid == '':
+            # check for any prexisting running .bof
+            print('checking for any prexisting running .bof executables')
+            existing_bof_proc = self.fpga_con._action("ps -o pid,args | grep [.]bof | while read c1 c2; do echo $c1; done")
+            existing_bof_proc = (existing_bof_proc.decode('utf8').split("\r\n"))[1]
+
+            if existing_bof_proc != '':
+                print('existing .bof was found running on the RHINO...')
+                print('assuming it is a the same TCU project...')
+                self.fpga_con._pid = existing_bof_proc
+            else:
+                print('no existing running .bof found, launching TCU.bof')
+                self.fpga_con.program(self.bof_exe)
+
+
 # -----------------------------------------------------------------------------
 # CORE INSTANTIATION
 # -----------------------------------------------------------------------------
@@ -48,9 +107,9 @@ registers = [reg_pulses, reg_num_repeats, reg_num_pulses,
 # -----------------------------------------------------------------------------
 # PROJECT INSTANTIATION
 # -----------------------------------------------------------------------------
-project = harpoon.Project('tcu_project',
-                          'project to communicate with the RHINO-TCU',
-                          [core_tcu])
+tcu_controller = TCUController(name='tcu_controller',
+                               description='project to communicate with the RHINO-TCU',
+                               cores=[core_tcu])
 
 
 class ControllerGUI(Ui_MainWindow):
