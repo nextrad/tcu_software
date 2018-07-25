@@ -86,6 +86,9 @@ reg_x_amp_delay = harpoon.Register('x_amp_delay',
 reg_l_amp_delay = harpoon.Register('l_amp_delay',
                                    'Switch-off delay for X band amplifier',
                                    'uint', 2, 3, core_tcu)
+reg_rex_delay = harpoon.Register('l_amp_delay',
+                                 'Delay for REX to output RF after PRI signal',
+                                 'uint', 2, 3, core_tcu)
 reg_pri_pulse_width = harpoon.Register('pri_pulse_width',
                                        'Pulse width of PRI signal',
                                        'uint', 4, 3, core_tcu)
@@ -99,10 +102,21 @@ reg_instruction = harpoon.Register('instruction',
                                    'Control register for TCU',
                                    'uint', 2, 3, core_tcu)
 
-registers = [reg_pulses, reg_num_repeats, reg_num_pulses,
-             reg_x_amp_delay, reg_l_amp_delay,
-             reg_pri_pulse_width, reg_pre_pulse,
-             reg_status, reg_instruction]
+# add list of registers to the core
+# TODO: fix this reverse dependency between core and registers
+registers = [
+            reg_pulses,
+            reg_num_repeats,
+            reg_num_pulses,
+            reg_x_amp_delay,
+            reg_l_amp_delay,
+            reg_rex_delay,
+            reg_pri_pulse_width,
+            reg_pre_pulse,
+            reg_status,
+            reg_instruction
+            ]
+core_tcu.registers = registers
 
 # -----------------------------------------------------------------------------
 # PROJECT INSTANTIATION
