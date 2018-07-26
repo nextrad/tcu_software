@@ -61,6 +61,7 @@ class TCUController(harpoon.Project):
                 print('no existing running .bof found, launching TCU.bof')
                 self.fpga_con.program(self.bof_exe)
 
+
 # TODO: used command line args from main
 fpga_con = borph.RHINO(address='192.168.1.36',
                        username='root',
@@ -77,34 +78,34 @@ core_tcu = harpoon.IPCore('tcu_core', 'Timing control unit')
 # -----------------------------------------------------------------------------
 reg_pulses = harpoon.Register('pulses',
                               'Block of pulses in experiment',
-                              int(), 140, 3, core_tcu, fpga_con)
+                              int, 140, 3, core_tcu, fpga_con)
 reg_num_repeats = harpoon.Register('num_repeats',
                                    'Number of repeats for each pulse',
-                                   int(), 4, 3, core_tcu, fpga_con)
+                                   int, 4, 3, core_tcu, fpga_con)
 reg_num_pulses = harpoon.Register('num_pulses',
                                   'Number of pulses',
-                                  int(), 2, 3, core_tcu, fpga_con)
+                                  int, 2, 3, core_tcu, fpga_con)
 reg_x_amp_delay = harpoon.Register('x_amp_delay',
                                    'Switch-off delay for X band amplifier',
-                                   int(), 2, 3, core_tcu, fpga_con)
+                                   int, 2, 3, core_tcu, fpga_con)
 reg_l_amp_delay = harpoon.Register('l_amp_delay',
                                    'Switch-off delay for X band amplifier',
-                                   int(), 2, 3, core_tcu, fpga_con)
-reg_rex_delay = harpoon.Register('l_amp_delay',
+                                   int, 2, 3, core_tcu, fpga_con)
+reg_rex_delay = harpoon.Register('rex_delay',
                                  'Delay for REX to output RF after PRI signal',
-                                 int(), 2, 3, core_tcu, fpga_con)
+                                 int, 2, 3, core_tcu, fpga_con)
 reg_pri_pulse_width = harpoon.Register('pri_pulse_width',
                                        'Pulse width of PRI signal',
-                                       int(), 4, 3, core_tcu, fpga_con)
+                                       int, 4, 3, core_tcu, fpga_con)
 reg_pre_pulse = harpoon.Register('pre_pulse',
                                  'Pre pulse duration before the main bang',
-                                 int(), 2, 3, core_tcu, fpga_con)
+                                 int, 2, 3, core_tcu, fpga_con)
 reg_status = harpoon.Register('status',
                               'Current state of the TCU',
-                              int(), 2, 1, core_tcu, fpga_con)
+                              int, 2, 1, core_tcu, fpga_con)
 reg_instruction = harpoon.Register('instruction',
                                    'Control register for TCU',
-                                   int(), 2, 3, core_tcu, fpga_con)
+                                   int, 2, 3, core_tcu, fpga_con)
 
 # add list of registers to the core
 # TODO: fix this reverse dependency between core and registers
