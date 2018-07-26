@@ -11,21 +11,20 @@ from harpoon.boardsupport import borph
 
 class TCUController(harpoon.Project):
     def __init__(self,
+                 fpga_con,
                  name='tcu_controller',
                  description='project to communicate with the RHINO-TCU',
                  cores=list(),
                  address='192.168.1.36',
                  headerfile='PulseParameters.ini',
-                 bof_exe='tcu_v2-1.bof'):
+                 bof_exe='tcu_v2-1_internal_clk.bof',
+                 ):
 
         harpoon.Project.__init__(self, name, description, cores)
         self.address = address
         self.headerfile = headerfile
         self.bof_exe = bof_exe
-        self.fpga_con = borph.RHINO(address=self.address,
-                                    username='root',
-                                    password='rhino',
-                                    login_timeout=30)
+        self.fpga_con = fpga_con
 
     def connect(self):
         print('initializing rhino connection, IP address: ' + self.address)
@@ -62,6 +61,11 @@ class TCUController(harpoon.Project):
                 print('no existing running .bof found, launching TCU.bof')
                 self.fpga_con.program(self.bof_exe)
 
+# TODO: used command line args from main
+fpga_con = borph.RHINO(address='192.168.1.36',
+                       username='root',
+                       password='rhino',
+                       login_timeout=30)
 
 # -----------------------------------------------------------------------------
 # CORE INSTANTIATION
@@ -73,34 +77,34 @@ core_tcu = harpoon.IPCore('tcu_core', 'Timing control unit')
 # -----------------------------------------------------------------------------
 reg_pulses = harpoon.Register('pulses',
                               'Block of pulses in experiment',
-                              'uint', 140, 3, core_tcu)
+                              int(), 140, 3, core_tcu, fpga_con)
 reg_num_repeats = harpoon.Register('num_repeats',
                                    'Number of repeats for each pulse',
-                                   'uint', 4, 3, core_tcu)
+                                   int(), 4, 3, core_tcu, fpga_con)
 reg_num_pulses = harpoon.Register('num_pulses',
                                   'Number of pulses',
-                                  'uint', 2, 3, core_tcu)
+                                  int(), 2, 3, core_tcu, fpga_con)
 reg_x_amp_delay = harpoon.Register('x_amp_delay',
                                    'Switch-off delay for X band amplifier',
-                                   'uint', 2, 3, core_tcu)
+                                   int(), 2, 3, core_tcu, fpga_con)
 reg_l_amp_delay = harpoon.Register('l_amp_delay',
                                    'Switch-off delay for X band amplifier',
-                                   'uint', 2, 3, core_tcu)
+                                   int(), 2, 3, core_tcu, fpga_con)
 reg_rex_delay = harpoon.Register('l_amp_delay',
                                  'Delay for REX to output RF after PRI signal',
-                                 'uint', 2, 3, core_tcu)
+                                 int(), 2, 3, core_tcu, fpga_con)
 reg_pri_pulse_width = harpoon.Register('pri_pulse_width',
                                        'Pulse width of PRI signal',
-                                       'uint', 4, 3, core_tcu)
+                                       int(), 4, 3, core_tcu, fpga_con)
 reg_pre_pulse = harpoon.Register('pre_pulse',
                                  'Pre pulse duration before the main bang',
-                                 'uint', 2, 3, core_tcu)
+                                 int(), 2, 3, core_tcu, fpga_con)
 reg_status = harpoon.Register('status',
                               'Current state of the TCU',
-                              'uint', 2, 1, core_tcu)
+                              int(), 2, 1, core_tcu, fpga_con)
 reg_instruction = harpoon.Register('instruction',
                                    'Control register for TCU',
-                                   'uint', 2, 3, core_tcu)
+                                   int(), 2, 3, core_tcu, fpga_con)
 
 # add list of registers to the core
 # TODO: fix this reverse dependency between core and registers
@@ -123,7 +127,8 @@ core_tcu.registers = registers
 # -----------------------------------------------------------------------------
 tcu_controller = TCUController(name='tcu_controller',
                                description='project to communicate with the RHINO-TCU',
-                               cores=[core_tcu])
+                               cores=[core_tcu],
+                               fpga_con=fpga_con)
 
 
 class ControllerGUI(Ui_MainWindow):
