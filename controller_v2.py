@@ -1,5 +1,7 @@
 import sys
 import argparse
+import time
+import logging
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
@@ -8,6 +10,29 @@ from controller_gui import Ui_MainWindow
 import harpoon
 from harpoon.boardsupport import borph
 
+logger = logging.getLogger('tcu_project_logger')
+
+def init_logger():
+    logger.setLevel(logging.DEBUG)
+    # create file handler which logs even debug messages
+    time_struct = time.localtime()
+    time_str = time.strftime("%H:%M:%S", time_struct)
+    date_str = time.strftime("%d-%m-%Y", time_struct)
+    fh = logging.FileHandler('tcu_experiment_' + date_str + '_' + time_str + '.log')
+    fh.setLevel(logging.DEBUG)
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.INFO)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter2 = logging.Formatter('[%(levelname)s] %(message)s')
+    ch.setFormatter(formatter2)
+    fh.setFormatter(formatter)
+    # add the handlers to logger
+    logging.getLogger().addHandler(fh)
+    logging.getLogger().addHandler(ch)
+
+init_logger()
 
 class TCUController(harpoon.Project):
     def __init__(self,
@@ -156,6 +181,8 @@ if __name__ == '__main__':
                         '[\'/tmp\']', default='/tmp')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
     args = parser.parse_args()
+
+
 
     if args.gui is True:
         app = QtWidgets.QApplication(sys.argv)
