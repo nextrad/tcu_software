@@ -331,6 +331,7 @@ def verify_registers():
 def arm_tcu():
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x00\\x00', fpga_con._pid, 'instruction'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x00\\x00', fpga_con._pid, 'instruction'))
+    time.sleep(3)
     logger.debug('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
     fpga_con._action('echo -en \'{}\' | cat > /proc/{}/hw/ioreg/{}'.format('\\x01\\x00', fpga_con._pid, 'instruction'))
     logger.debug('TCU armed')
