@@ -35,6 +35,7 @@ class Creator(Ui_MainWindow):
         self.spin_num_pulses.valueChanged.connect(self.update_metadata)
         self.spin_num_repeats.valueChanged.connect(self.update_metadata)
         self.spin_samples_per_pri.valueChanged.connect(self.update_metadata)
+        self.combo_mode.activated[str].connect(self.update_frequency_band)
     #     self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
     #
     # def select_row(self):
@@ -153,6 +154,13 @@ class Creator(Ui_MainWindow):
             self.button_remove_pulse.setEnabled(False)
 
         self.spin_num_pulses.setMinimum(len(self.tcu_params.pulses))
+
+    def update_frequency_band(self):
+        # TODO: remove magic numbers
+        if self.combo_mode.currentIndex() in range(4):
+            self.spin_frequency.setRange(1235, 1365)
+        else:
+            self.spin_frequency.setRange(8500, 9200)
 
     def update_metadata(self):
         samples_per_pri = self.spin_samples_per_pri.value()
