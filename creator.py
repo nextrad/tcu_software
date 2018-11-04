@@ -30,20 +30,22 @@ class Creator(Ui_MainWindow):
         self.button_export_close.clicked.connect(self.export_close)
         self.button_add_pulse.clicked.connect(self.add_pulse)
         self.button_add_pulse.clicked.connect(self.update_metadata)
+        self.button_edit_pulse.clicked.connect(self.edit_pulse)
+        self.button_edit_pulse.clicked.connect(self.update_metadata)
         self.button_remove_pulse.clicked.connect(self.remove_pulse)
-        self.spin_num_pulses.valueChanged.connect(self.update_table)
-        self.spin_num_pulses.valueChanged.connect(self.update_metadata)
+        # self.spin_num_pulses.valueChanged.connect(self.update_table)
+        # self.spin_num_pulses.valueChanged.connect(self.update_metadata)
         self.spin_num_repeats.valueChanged.connect(self.update_metadata)
         self.spin_samples_per_pri.valueChanged.connect(self.update_metadata)
         self.combo_mode.activated[str].connect(self.update_frequency_band)
-    #     self.table_pulse_params.itemSelectionChanged.connect(self.select_row)
+        self.table_pulse_params.itemSelectionChanged.connect(self.update_selection)
     #
     # def select_row(self):
     #     items = self.table_pulse_params.selectedItems()
 
         # populate fields with existing headerfile data
         self.spin_clk_period.setProperty("value", self.tcu_params.clk_period_ns)
-        self.spin_num_pulses.setProperty("value", self.tcu_params.num_pulses)
+        # self.spin_num_pulses.setProperty("value", self.tcu_params.num_pulses)
         self.spin_num_repeats.setProperty("value", self.tcu_params.num_repeats)
         self.spin_pri_pulse_width.setProperty("value", self.tcu_params.pri_pulse_width)
         self.spin_prepulse.setProperty("value", self.tcu_params.pre_pulse)
@@ -60,6 +62,7 @@ class Creator(Ui_MainWindow):
         # with varying pulse widths. for now, this value is the same as the
         # WAVEFORM_INDEX value
         self.spin_rf_pulse_width.setProperty("enabled", False)
+        self.spin_rf_pulse_width.setToolTip('Multiple pulse-widths not yet supported, please use \'Waveform Index\' parameter')
         self.combo_waveform_index.currentTextChanged.connect(self.pulse_width_update)
 
     def pulse_width_update(self):
@@ -75,8 +78,7 @@ class Creator(Ui_MainWindow):
         # TODO: input validation and verification
         # retrieve general params
         self.tcu_params.clk_period_ns = self.spin_clk_period.value()
-        self.tcu_params.num_pulses = self.spin_num_pulses.value()
-        self.tcu_params.num_pulses = self.spin_num_pulses.value()
+        # self.tcu_params.num_pulses = self.spin_num_pulses.value()
         self.tcu_params.num_repeats = self.spin_num_repeats.value()
         self.tcu_params.pri_pulse_width = self.spin_pri_pulse_width.value()
         self.tcu_params.pre_pulse = self.spin_prepulse.value()
@@ -113,22 +115,37 @@ class Creator(Ui_MainWindow):
                  'frequency': self.spin_frequency.value()}
         self.tcu_params.pulses.append(pulse)
         self.update_table()
-        # if num added pulses == num_pulses, disabled add button
 
-    def remove_pulse(self):
+    def _get_selected_rows(self):
         index_list = []
         for model_index in self.table_pulse_params.selectionModel().selectedRows():
             index = QtCore.QPersistentModelIndex(model_index)
             index_list.append(index)
+        return index_list
+
+    def edit_pulse(self):
+        index_list = self._get_selected_rows()
 
         for index in index_list:
-            print(index.row())
+            print('editing pulse #' + str(index.row()+1))
+
+        pulse = {'pulse_width': self.spin_rf_pulse_width.value(),
+                 'pri': self.spin_pri.value(),
+                 'pol_mode': self.combo_mode.currentIndex(),
+                 'frequency': self.spin_frequency.value()}
+        self.tcu_params.pulses[index.row()] = pulse
+        self.update_table()
+
+    def remove_pulse(self):
+        index_list = self._get_selected_rows()
+
+        for index in index_list:
+            print('deleting pulse #' + str(index.row()+1))
             del self.tcu_params.pulses[index.row()]
-            self.table_pulse_params.removeRow(index.row())
         self.update_table()
 
     def update_table(self):
-        self.table_pulse_params.setRowCount(self.spin_num_pulses.value())
+        self.table_pulse_params.setRowCount(len(self.tcu_params.pulses))
         for index, pulse_param in enumerate(self.tcu_params.pulses):
             self.table_pulse_params.setItem(index, 0, QTableWidgetItem(str(pulse_param['pulse_width'])))
             self.table_pulse_params.setItem(index, 1, QTableWidgetItem(str(pulse_param['pri'])))
@@ -136,24 +153,45 @@ class Creator(Ui_MainWindow):
             self.table_pulse_params.setItem(index, 3, QTableWidgetItem(str(pulse_param['frequency'])))
 
         if len(self.tcu_params.pulses) > 0:
-            self.table_pulse_params.selectRow(len(self.tcu_params.pulses) - 1)
+            # self.table_pulse_params.selectRow(len(self.tcu_params.pulses) - 1)
             self.button_export.setEnabled(True)
             self.button_export_close.setEnabled(True)
         else:
             self.button_export.setEnabled(False)
             self.button_export_close.setEnabled(False)
 
-        if len(self.tcu_params.pulses) < self.spin_num_pulses.value():
+        if len(self.tcu_params.pulses) < 32:
             self.button_add_pulse.setEnabled(True)
         else:
             self.button_add_pulse.setEnabled(False)
-
-        if len(self.tcu_params.pulses) > 0:
+        index_list = self._get_selected_rows()
+        if len(index_list) > 0:
+            self.button_edit_pulse.setEnabled(True)
             self.button_remove_pulse.setEnabled(True)
-        else:
-            self.button_remove_pulse.setEnabled(False)
+            self.label_pulse_index.setText("Pulse " + str(index_list[0].row()+1) + " of " + str(len(self.tcu_params.pulses)))
 
-        self.spin_num_pulses.setMinimum(len(self.tcu_params.pulses))
+        else:
+            self.button_edit_pulse.setEnabled(False)
+            self.button_remove_pulse.setEnabled(False)
+            self.label_pulse_index.setText("No pulse selected")
+
+    def update_selection(self):
+        index_list = self._get_selected_rows()
+        if len(index_list) > 0:
+            self.label_pulse_index.setText("Pulse " + str(index_list[0].row()+1) + " of " + str(len(self.tcu_params.pulses)))
+            selected_pulse = self.tcu_params.pulses[index_list[0].row()]
+            self.spin_rf_pulse_width.setProperty("value", selected_pulse['pulse_width'])
+            self.spin_pri.setProperty("value", selected_pulse['pri'])
+            self.combo_mode.setCurrentIndex(selected_pulse['pol_mode'])
+            self.update_frequency_band()
+            self.spin_frequency.setProperty("value", selected_pulse['frequency'])
+            self.button_edit_pulse.setEnabled(True)
+            self.button_remove_pulse.setEnabled(True)
+            self.label_pulse_index.setText("Pulse " + str(index_list[0].row()+1) + " of " + str(len(self.tcu_params.pulses)))
+        else:
+            self.button_edit_pulse.setEnabled(False)
+            self.button_remove_pulse.setEnabled(False)
+            self.label_pulse_index.setText("No pulse selected")
 
     def update_frequency_band(self):
         # TODO: remove magic numbers
@@ -164,7 +202,7 @@ class Creator(Ui_MainWindow):
 
     def update_metadata(self):
         samples_per_pri = self.spin_samples_per_pri.value()
-        num_pulses = self.spin_num_pulses.value()
+        num_pulses = len(self.tcu_params.pulses)
         num_repeats = self.spin_num_repeats.value()
         time_block_microseconds = 0
         for pulse in self.tcu_params.pulses:
