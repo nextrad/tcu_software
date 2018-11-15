@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
 from controller_gui import Ui_MainWindow
 import harpoon
 from harpoon.boardsupport import borph
-
+from parser import TCUParams
 
 class TCUController(harpoon.Project):
     def __init__(self,
@@ -20,6 +20,8 @@ class TCUController(harpoon.Project):
                  address='192.168.1.36',
                  headerfile='PulseParameters.ini',
                  bof_exe='tcu_v2-1_internal_clk.bof',
+                 debug=False,
+                 log_dir=''
                  ):
 
         harpoon.Project.__init__(self, name, description, cores)
@@ -27,20 +29,24 @@ class TCUController(harpoon.Project):
         self.headerfile = headerfile
         self.bof_exe = bof_exe
         self.fpga_con = fpga_con
-        self._init_logger()
+        self._init_logger(log_dir, debug)
 
-    def _init_logger(self):
+    def _init_logger(self, log_dir='', debug=False):
         self.logger = logging.getLogger('tcu_project_logger')
         self.logger.setLevel(logging.DEBUG)
+        self.log_dir = log_dir
         # create file handler which logs even debug messages
         time_struct = time.localtime()
         time_str = time.strftime("%H:%M:%S", time_struct)
         date_str = time.strftime("%d-%m-%Y", time_struct)
-        fh = logging.FileHandler('tcu_' + self.fpga_con.address + '.log')
+        fh = logging.FileHandler(self.log_dir+'tcu_'+self.fpga_con.address+'.log')
         fh.setLevel(logging.DEBUG)
         # create console handler with a higher log level
         ch = logging.StreamHandler()
-        ch.setLevel(logging.INFO)
+        if debug is True:
+            ch.setLevel(logging.DEBUG)
+        else:
+            ch.setLevel(logging.INFO)
         # create formatter and add it to the handlers
         formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         formatter2 = logging.Formatter('[%(levelname)s] %(message)s')
@@ -78,12 +84,91 @@ class TCUController(harpoon.Project):
 
     def parse_header(self):
         self.logger.info('parsing header file...')
+        self.tcu_params = TCUParams(self.headerfile)
+        self.logger.debug('Extracted parameters from header:\n' + str(self.tcu_params))
 
     def write_registers(self):
         self.logger.info('writing registers...')
+        params = self.tcu_params.get_int_params()
+        reg_num_repeats.write(params['num_repeats'])
+        reg_num_pulses.write(params['num_pulses'])
+        reg_x_amp_delay.write(params['x_amp_delay'])
+        reg_l_amp_delay.write(params['l_amp_delay'])
+        reg_rex_delay.write(params['rex_delay'])
+        reg_pri_pulse_width.write(params['pri_pulse_width'])
+        reg_pre_pulse.write(params['pre_pulse'])
+
+        # need to do a bit more work for reg_pulses,
+        # as it is a more complex data structure
+        hex_params = self.tcu_params.get_hex_params()
+        pulses = hex_params['pulses']
+        pulse_param_str = str()
+        for pulse in pulses:
+            pulse_param_str += pulse['pulse_width'].replace('\\x', '') + pulse['pri'].replace('\\x', '') + pulse['pol_mode'].replace('\\x', '') + pulse['frequency'].replace('\\x', '')
+        pulse_param_bytearray = bytearray.fromhex(pulse_param_str)
+        reg_pulses.write_bytes(pulse_param_bytearray, raw=True)
 
     def verify_registers(self):
         self.logger.info('verifying registers...')
+        params = self.tcu_params.get_int_params()
+        register_value_correct = True
+        if self._verify_register(reg_num_repeats, params['num_repeats']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_num_pulses, params['num_pulses']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_x_amp_delay, params['x_amp_delay']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_l_amp_delay, params['l_amp_delay']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_rex_delay, params['rex_delay']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_pri_pulse_width, params['pri_pulse_width']) == False:
+            register_value_correct = False
+        if self._verify_register(reg_pre_pulse, params['pre_pulse']) == False:
+            register_value_correct = False
+
+        # need to do a bit more work for reg_pulses,
+        # as it is a more complex data structure
+        hex_params = self.tcu_params.get_hex_params(hdl_format=True)
+        pulses = hex_params['pulses']
+        pulse_param_str = str()
+        for pulse in pulses:
+            pulse_param_str += pulse['pulse_width'].replace('\"', '') + pulse['pri'].replace('\"', '') + pulse['pol_mode'].replace('\"', '') + pulse['frequency'].replace('\"', '')
+        pulse_param_str = pulse_param_str.replace('x', '')
+
+        num_pulses = reg_num_pulses.read()
+        read_value = reg_pulses.read_bytes()[0:(10*num_pulses)]
+        read_value_str= str()
+        for pulse_index in range(num_pulses):
+            # print('pulse[{}]'.format(pulse_index))
+            pulse_width = read_value[pulse_index*10 + 0:pulse_index*10+ 2]
+            # print('pw {}'.format(pulse_width.hex()))
+            pri = read_value[pulse_index*10 + 4:pulse_index*10+ 6] + read_value[pulse_index*10 + 2:pulse_index*10+ 4]
+            # print('pri {}'.format(pri.hex()))
+            mode = read_value[pulse_index*10 + 6:pulse_index*10+ 8]
+            # print('mode {}'.format(mode.hex()))
+            freq = read_value[pulse_index*10 + 8:pulse_index*10+ 10]
+            # print('freq {}'.format(freq.hex()))
+            read_value_str += pulse_width.hex() + pri.hex() + mode.hex() + freq.hex()
+        if read_value_str == pulse_param_str:
+            self.logger.debug('Register \'{}\' verified'.format('pulses'))
+        else:
+            self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format('pulses', read_value_str, pulse_param_str))
+            register_value_correct = False
+
+        if register_value_correct:
+            self.logger.info('All registers have been verified')
+        else:
+            self.logger.error('One or more registers contain incorrect value(s) - see {} for details'.format(self.log_dir+'tcu_'+self.fpga_con.address+'.log'))
+
+    def _verify_register(self, register, expected_value):
+        read_value = register.read()
+        if read_value == expected_value:
+            self.logger.debug('Register \'{}\' verified'.format(register.name))
+            return True
+        else:
+            self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format(register.name, read_value, expected_value))
+            return False
 
     def arm(self):
         self.logger.info('arming tcu...')
@@ -170,17 +255,33 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', help='display debug messages to STDOUT',
                         action='store_true', default=False)
     parser.add_argument('-l', '--logdir', help='directory to store log file '
-                        '[\'/tmp\']', default='/tmp')
+                        '[\'/tmp/\']', default='/tmp/')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
+    parser.add_argument('-k', '--kill', help='kill running .bof',
+                        action="store_true", default=False)
+    parser.add_argument('-i', '--init', help='automatically connect and initialize TCU',
+                        action="store_true", default=False)
     args = parser.parse_args()
-    print(args.address)
+
     fpga_con.address = args.address
-    fpga_con.login_timeout= args.timeout
+    fpga_con.login_timeout = args.timeout
+
     tcu = TCUController(name='tcu_controller',
                         description='project to communicate with the RHINO-TCU',
                         cores=[core_tcu],
                         fpga_con=fpga_con,
-                        bof_exe=args.bof)
+                        bof_exe=args.bof,
+                        debug=args.debug,
+                        log_dir=args.logdir)
+
+    if args.init is True:
+        tcu.parse_header()
+        tcu.connect()
+        tcu.start()
+        tcu.write_registers()
+        tcu.verify_registers()
+        tcu.arm()
+        tcu.disconnect()
 
     if args.gui is True:
         app = QtWidgets.QApplication(sys.argv)
