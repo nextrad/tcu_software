@@ -225,18 +225,6 @@ class TCUParams(object):
 
     def export(self):
         """exports pulse parameters in NeXtRAD.ini format"""
-        # TODO: use config parser for this
-        #print('NUM_PULSES = {}'.format(self.num_pulses))
-        #print('NUM_REPEATS = {}'.format(self.num_repeats))
-        #print('PRI_PULSE_WIDTH = {}'.format(self.pri_pulse_width))
-        #print('pre_pulse_DELAY = {}'.format(self.pre_pulse))
-        #print('X_AMP_DELAY = {}'.format(self.x_amp_delay))
-        #print('L_AMP_DELAY = {}'.format(self.l_amp_delay))
-        #print('; PULSES = [<PULSE|PULSE|PULSE...>]')
-        #print('; PULSE = [<p. width>, <pri>, <mode>, <freq>]')
-        #print(self.to_pulses_string())
-        #print()
-        #self.to_vhdl_snippet()
         params = {'num_pulses':self.num_pulses,
                   'num_repeats':self.num_repeats,
                   'pri_pulse_width':self.pri_pulse_width,
@@ -334,6 +322,33 @@ class TCUParams(object):
                                          'frequency': self._int_to_hex_str(int(pulse['frequency']), hdl=hdl_format, big_endian=(not hdl_format))})
 
         return hex_params
+
+    def get_int_params(self, hdl_format=False):
+        """returns a dictionary of parameters in integer format"""
+        int_params = dict()
+        int_params['num_pulses'] = self.num_pulses
+        int_params['num_repeats'] = self.num_repeats
+        pri_pulse_width = self._to_clock_ticks(self.pri_pulse_width)
+        int_params['pri_pulse_width'] = pri_pulse_width
+        pre_pulse = self._to_clock_ticks(self.pre_pulse)
+        int_params['pre_pulse'] = pre_pulse
+        x_amp_delay = self._to_clock_ticks(self.x_amp_delay)
+        int_params['x_amp_delay'] = x_amp_delay
+        l_amp_delay = self._to_clock_ticks(self.l_amp_delay)
+        int_params['l_amp_delay'] = l_amp_delay
+        rex_delay = self._to_clock_ticks(self.rex_delay)
+        int_params['rex_delay'] = rex_delay
+        int_params['pulses'] = list()
+        for index, pulse in enumerate(self.pulses):
+            pulse_width = self._to_clock_ticks(pulse['pulse_width'])
+            pri = self._to_clock_ticks(pulse['pri'])
+            pri_offset = pri - pre_pulse - pulse_width
+            int_params['pulses'].append({'pulse_width': pulse_width,
+                                         'pri': pri_offset,
+                                         'pol_mode': int(pulse['pol_mode']),
+                                         'frequency': int(pulse['frequency'])})
+
+        return int_params
 
     def _to_clock_ticks(self, x):
         """ converts a time duration into a number of clock ticks """
