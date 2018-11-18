@@ -12,20 +12,26 @@
 import argparse
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem, QFileDialog, QMessageBox
 import datetime
 
 from creator_gui import Ui_MainWindow
 from parser import TCUParams
 
-
+VERSION = '1.1.0'
 class Creator(Ui_MainWindow):
     """docstring for TCUPulseParamsGUILogic."""
 
     def __init__(self, tcu_params, window):
-        Ui_MainWindow.__init__(self)
+        self.main_window = Ui_MainWindow.__init__(self)
         self.setupUi(window)
+        window.setWindowTitle('TCU Parameter Editor v' + VERSION)
         self.tcu_params = tcu_params
+        self.actionQuit.triggered.connect(sys.exit)
+        self.actionOpen.triggered.connect(self.open)
+        self.actionExport.triggered.connect(self.export_to)
+        self.actionInstructions.triggered.connect(self.display_help)
+        self.actionAbout.triggered.connect(self.display_about)
         self.button_export.clicked.connect(self.export)
         self.button_export_close.clicked.connect(self.export_close)
         self.button_add_pulse.clicked.connect(self.add_pulse)
@@ -39,9 +45,9 @@ class Creator(Ui_MainWindow):
         self.spin_samples_per_pri.valueChanged.connect(self.update_metadata)
         self.combo_mode.activated[str].connect(self.update_frequency_band)
         self.table_pulse_params.itemSelectionChanged.connect(self.update_selection)
-    #
-    # def select_row(self):
-    #     items = self.table_pulse_params.selectedItems()
+        #
+        # def select_row(self):
+        #     items = self.table_pulse_params.selectedItems()
 
         # populate fields with existing headerfile data
         self.spin_clk_period.setProperty("value", self.tcu_params.clk_period_ns)
@@ -72,6 +78,29 @@ class Creator(Ui_MainWindow):
         for pulse in self.tcu_params.pulses:
             pulse['pulse_width'] = pulse_width
         self.update_table()
+
+    def _get_filename_from_dialog(self):
+        filename = QFileDialog.getOpenFileName(parent=self.main_window, caption='Open file', directory='./', filter='INI Files (*.ini);;All Files (*)')
+        return (filename[0])
+
+    def open(self):
+        filename = self._get_filename_from_dialog()
+
+    def export_to(self):
+        filename = self._get_filename_from_dialog()
+
+    def display_help(self):
+        self.instructions_window = QtWidgets.QMainWindow()
+        widget = QtWidgets.QWidget(self.instructions_window)
+        gridlayout = QtWidgets.QGridLayout()
+        widget.setLayout(gridlayout)
+        widget.setWindowTitle('Instructions')
+        gridlayout.addWidget(QtWidgets.QLabel(widget, text='https://github.com/nextrad/tcu_software'))
+        self.instructions_window.show()
+
+
+    def display_about(self):
+        QMessageBox.about(self.main_window, 'About', 'TCU Parameter Editor\nv1.1.0\nBrad Kahn')
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles

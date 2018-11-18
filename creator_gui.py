@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'creator_gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.10
+# Created by: PyQt5 UI code generator 5.10.1
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(672, 470)
+        MainWindow.resize(672, 497)
         MainWindow.setAutoFillBackground(False)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -248,8 +248,14 @@ class Ui_MainWindow(object):
         self.gridLayout_2.addWidget(self.label_pulse_index, 0, 0, 1, 2)
         self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-        self.actionOpen = QtWidgets.QAction(MainWindow)
-        self.actionOpen.setObjectName("actionOpen")
+        self.menuBar = QtWidgets.QMenuBar(MainWindow)
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 672, 27))
+        self.menuBar.setObjectName("menuBar")
+        self.menuFile = QtWidgets.QMenu(self.menuBar)
+        self.menuFile.setObjectName("menuFile")
+        self.menuAbout = QtWidgets.QMenu(self.menuBar)
+        self.menuAbout.setObjectName("menuAbout")
+        MainWindow.setMenuBar(self.menuBar)
         self.actionQuit = QtWidgets.QAction(MainWindow)
         self.actionQuit.setObjectName("actionQuit")
         self.actionNew = QtWidgets.QAction(MainWindow)
@@ -261,13 +267,25 @@ class Ui_MainWindow(object):
         self.actionPreferences = QtWidgets.QAction(MainWindow)
         self.actionPreferences.setEnabled(True)
         self.actionPreferences.setObjectName("actionPreferences")
+        self.actionOpen = QtWidgets.QAction(MainWindow)
+        self.actionOpen.setObjectName("actionOpen")
+        self.actionInstructions = QtWidgets.QAction(MainWindow)
+        self.actionInstructions.setObjectName("actionInstructions")
+        self.menuFile.addAction(self.actionOpen)
+        self.menuFile.addAction(self.actionExport)
+        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionQuit)
+        self.menuAbout.addAction(self.actionInstructions)
+        self.menuAbout.addAction(self.actionAbout)
+        self.menuBar.addAction(self.menuFile.menuAction())
+        self.menuBar.addAction(self.menuAbout.menuAction())
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "TCU Parameter Editor v1.1.0"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "TCU Parameter Editor"))
         self.button_export.setText(_translate("MainWindow", "Export"))
         self.button_export_close.setText(_translate("MainWindow", "Export + Close"))
         item = self.table_pulse_params.horizontalHeaderItem(0)
@@ -321,12 +339,15 @@ class Ui_MainWindow(object):
         self.combo_mode.setItemText(4, _translate("MainWindow", "4: X-HV/H"))
         self.combo_mode.setItemText(5, _translate("MainWindow", "5: X-VV/H"))
         self.label_pulse_index.setText(_translate("MainWindow", "Pulse 0 of 0"))
-        self.actionOpen.setText(_translate("MainWindow", "Open..."))
-        self.actionQuit.setText(_translate("MainWindow", "Quit"))
+        self.menuFile.setTitle(_translate("MainWindow", "&File"))
+        self.menuAbout.setTitle(_translate("MainWindow", "&Help"))
+        self.actionQuit.setText(_translate("MainWindow", "&Quit"))
         self.actionNew.setText(_translate("MainWindow", "New"))
-        self.actionExport.setText(_translate("MainWindow", "Export..."))
+        self.actionExport.setText(_translate("MainWindow", "&Export..."))
         self.actionAbout.setText(_translate("MainWindow", "About"))
         self.actionPreferences.setText(_translate("MainWindow", "Preferences..."))
+        self.actionOpen.setText(_translate("MainWindow", "&Open..."))
+        self.actionInstructions.setText(_translate("MainWindow", "Instructions"))
 
 
 if __name__ == "__main__":
