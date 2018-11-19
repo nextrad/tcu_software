@@ -75,6 +75,13 @@ class TCUController(harpoon.Project):
         self.logger.info('disconnect successful!')
 
     def start(self):
+        self.logger.info('powering fmc0...')
+        self.fpga_con._action('echo 102 > /sys/class/gpio/export')
+        self.fpga_con._action('echo out > /sys/class/gpio/gpio102/direction')
+        self.fpga_con._action('echo 1 > /sys/class/gpio/gpio102/value')
+        self.fpga_con._action('echo out > /sys/class/gpio/gpio100/direction')
+        self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
+
         self.logger.info('starting.bof...')
         self.fpga_con.launch_bof(self.bof_exe, link=True)
 
