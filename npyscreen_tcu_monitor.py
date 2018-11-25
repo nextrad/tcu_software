@@ -1,6 +1,8 @@
 import npyscreen
+import argparse
 
 
+ADDRESS=''
 class TCUMonitorForm(npyscreen.Form):
 
     def afterEditing(self):
@@ -8,7 +10,7 @@ class TCUMonitorForm(npyscreen.Form):
 
     def create(self):
         self.keypress_timeout = 10  # refresh period in 100ms (10 = 1s)
-        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=False, value='192.168.1.36')
+        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=False, value=ADDRESS)
         self.text_connection = self.add(npyscreen.TitleText, name='Connection', editable=False, value='Disconnected')
         self.text_state = self.add(npyscreen.TitleText, name='State', editable=False, value='?')
         self.text_num_pulses = self.add(npyscreen.TitleText, name='Pulses', editable=False, value='?')
@@ -17,7 +19,7 @@ class TCUMonitorForm(npyscreen.Form):
         self.text_x_amp_delay = self.add(npyscreen.TitleText, name='X Amp Delay', editable=False, value='?')
         self.text_l_amp_delay = self.add(npyscreen.TitleText, name='L Amp Delay', editable=False, value='?')
         self.text_rex_delay = self.add(npyscreen.TitleText, name='Rex Delay', editable=False, value='?')
-        self.grid_pulses = self.add(npyscreen.GridColTitles, name='Pulses', editable=False, height=7, max_height=10)
+        self.grid_pulses = self.add(npyscreen.GridColTitles, name='Pulses', editable=False, column_width=10, height=7, max_height=10)
         self.grid_pulses.col_titles =[ 'Pulse', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
         self.grid_pulses.values = [
                                     ['0', '10.0', '1000', '0', '1300'],
@@ -27,8 +29,8 @@ class TCUMonitorForm(npyscreen.Form):
                                     ['4', '10.0', '1000', '4', '8500'],
                                     ['5', '10.0', '1000', '5', '8500'],
                                   ]
-        self.button_arm = self.add(npyscreen.ButtonPress, name='Arm')
-        self.button_arm.whenPressed = self.when_pressed_arm
+        # self.button_arm = self.add(npyscreen.ButtonPress, name='Arm')
+        # self.button_arm.whenPressed = self.when_pressed_arm
 
     def when_pressed_arm(self):
         self.button_arm.name = 'disarm'
@@ -44,5 +46,12 @@ class TCUMonitorApplication(npyscreen.NPSAppManaged):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(usage='monitor [address]',
+                                     description='Monitor program for '
+                                                 'NeXtRAD\'s Timing Control Unit')
+    parser.add_argument('address', help='IP address of TCU')
+
+    args = parser.parse_args()
+    ADDRESS = args.address
     app = TCUMonitorApplication()
     app.run()
