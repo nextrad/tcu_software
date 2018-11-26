@@ -2,6 +2,7 @@ import sys
 import argparse
 import time
 import logging
+import npyscreen
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QTableWidget, QTableWidgetItem
@@ -10,6 +11,7 @@ from controller_gui import Ui_MainWindow
 import harpoon
 from harpoon.boardsupport import borph
 from parser import TCUParams
+
 
 class TCUController(harpoon.Project):
     def __init__(self,
@@ -247,6 +249,48 @@ class ControllerGUI(Ui_MainWindow):
         self.setupUi(window)
         self.txt_pulses.setText("value")
 
+class TCUMonitorForm(npyscreen.Form):
+
+    def afterEditing(self):
+        self.parentApp.setNextForm(None)
+
+    def create(self):
+        self.count = 0
+        self.keypress_timeout = 10  # refresh period in 100ms (10 = 1s)
+        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=True, value='xxx.xxx.xxx.xxx')
+        self.text_connection = self.add(npyscreen.TitleText, name='Connection', editable=False, value='?')
+        self.text_state = self.add(npyscreen.TitleText, name='State', editable=False, value='?')
+        self.text_num_pulses = self.add(npyscreen.TitleText, name='Pulses', editable=False, value='?')
+        self.text_num_repeats = self.add(npyscreen.TitleText, name='Repeats', editable=False, value='?')
+        self.text_pre_pulse = self.add(npyscreen.TitleText, name='Pre Pulse', editable=False, value='?')
+        self.text_x_amp_delay = self.add(npyscreen.TitleText, name='X Amp Delay', editable=False, value='?')
+        self.text_l_amp_delay = self.add(npyscreen.TitleText, name='L Amp Delay', editable=False, value='?')
+        self.text_rex_delay = self.add(npyscreen.TitleText, name='Rex Delay', editable=False, value='?')
+        self.grid_pulses = self.add(npyscreen.GridColTitles, name='Pulses', editable=False, column_width=10, height=7, max_height=10)
+        self.grid_pulses.col_titles =[ 'Pulse', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
+        self.grid_pulses.values = [
+                                    ['0', '10.0', '1000', '0', '1300'],
+                                    ['1', '10.0', '1000', '1', '1300'],
+                                    ['2', '10.0', '1000', '2', '1300'],
+                                    ['3', '10.0', '1000', '3', '1300'],
+                                    ['4', '10.0', '1000', '4', '8500'],
+                                    ['5', '10.0', '1000', '5', '8500'],
+                                  ]
+        # self.button_arm = self.add(npyscreen.ButtonPress, name='Arm')
+        # self.button_arm.whenPressed = self.when_pressed_arm
+
+    def when_pressed_arm(self):
+        self.button_arm.name = 'disarm'
+
+    def while_waiting(self):
+        # called every keypress_timeout period when user not interacting
+        self.text_address.value = str(self.count)
+        self.count = self.count + 1
+
+
+class TCUMonitorApplication(npyscreen.NPSAppManaged):
+    def onStart(self):
+        self.addForm('MAIN', TCUMonitorForm, name='TCU MONITOR')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(usage='tcu_controller [address]',
@@ -264,6 +308,7 @@ if __name__ == '__main__':
     parser.add_argument('-l', '--logdir', help='directory to store log file '
                         '[\'/tmp/\']', default='/tmp/')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
+    parser.add_argument('-m', '--monitor', action="store_true", default=False)
     parser.add_argument('-k', '--kill', help='kill running .bof',
                         action="store_true", default=False)
     parser.add_argument('-i', '--init', help='automatically connect and initialize TCU',
@@ -289,6 +334,12 @@ if __name__ == '__main__':
         tcu.verify_registers()
         tcu.arm()
         tcu.disconnect()
+
+    if args.monitor is True:
+        # tcu.connect()
+        # tcu.start()
+        app = TCUMonitorApplication()
+        app.run()
 
     if args.gui is True:
         app = QtWidgets.QApplication(sys.argv)
