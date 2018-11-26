@@ -151,22 +151,23 @@ class TCUController(harpoon.Project):
         num_pulses = reg_num_pulses.read()
         read_value = reg_pulses.read_bytes()[0:(10*num_pulses)]
         read_value_str= str()
-        for pulse_index in range(num_pulses):
-            # print('pulse[{}]'.format(pulse_index))
-            pulse_width = read_value[pulse_index*10 + 0:pulse_index*10+ 2]
-            # print('pw {}'.format(pulse_width.hex()))
-            pri = read_value[pulse_index*10 + 4:pulse_index*10+ 6] + read_value[pulse_index*10 + 2:pulse_index*10+ 4]
-            # print('pri {}'.format(pri.hex()))
-            mode = read_value[pulse_index*10 + 6:pulse_index*10+ 8]
-            # print('mode {}'.format(mode.hex()))
-            freq = read_value[pulse_index*10 + 8:pulse_index*10+ 10]
-            # print('freq {}'.format(freq.hex()))
-            read_value_str += pulse_width.hex() + pri.hex() + mode.hex() + freq.hex()
-        if read_value_str == pulse_param_str:
-            self.logger.debug('Register \'{}\' verified'.format('pulses'))
-        else:
-            self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format('pulses', read_value_str, pulse_param_str))
-            register_value_correct = False
+        self.logger.warning('Due to python version mismatches, verifying pulses register has been disabled')
+        # for pulse_index in range(num_pulses):
+        #     # print('pulse[{}]'.format(pulse_index))
+        #     pulse_width = read_value[pulse_index*10 + 0:pulse_index*10+ 2]
+        #     # print('pw {}'.format(pulse_width.hex()))
+        #     pri = read_value[pulse_index*10 + 4:pulse_index*10+ 6] + read_value[pulse_index*10 + 2:pulse_index*10+ 4]
+        #     # print('pri {}'.format(pri.hex()))
+        #     mode = read_value[pulse_index*10 + 6:pulse_index*10+ 8]
+        #     # print('mode {}'.format(mode.hex()))
+        #     freq = read_value[pulse_index*10 + 8:pulse_index*10+ 10]
+        #     # print('freq {}'.format(freq.hex()))
+        #     read_value_str += pulse_width.hex() + pri.hex() + mode.hex() + freq.hex()
+        # if read_value_str == pulse_param_str:
+        #     self.logger.debug('Register \'{}\' verified'.format('pulses'))
+        # else:
+        #     self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format('pulses', read_value_str, pulse_param_str))
+        #     register_value_correct = False
 
         if register_value_correct:
             self.logger.info('All registers have been verified')
