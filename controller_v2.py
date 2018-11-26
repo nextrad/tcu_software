@@ -62,6 +62,8 @@ class TCUController(harpoon.Project):
         self.logger.info('initializing rhino connection, IP address: ' + self.address)
         try:
             self.fpga_con.connect()
+            time.sleep(3)
+            self.power_fmc()
         except Exception as e:
             self.logger.exception('failed to connect to tcu')
             sys.exit(66)
@@ -87,7 +89,6 @@ class TCUController(harpoon.Project):
         # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
 
     def start(self):
-        self.power_fmc()
         self.logger.info('starting.bof...')
         self.fpga_con.launch_bof(self.bof_exe, link=True)
 
