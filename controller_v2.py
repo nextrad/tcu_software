@@ -79,6 +79,7 @@ class TCUController(harpoon.Project):
     def power_fmc(self):
         self.logger.debug('calling power_fmc.sh script...')
         fpga_con._action('./power_fmc.sh')
+        time.sleep(3)
         # self.fpga_con._action('echo 102 > /sys/class/gpio/export')
         # self.fpga_con._action('echo out > /sys/class/gpio/gpio102/direction')
         # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio102/value')
@@ -186,6 +187,7 @@ class TCUController(harpoon.Project):
     def arm(self):
         self.logger.info('arming tcu...')
         reg_instruction.write(0)
+        time.sleep(3)
         reg_instruction.write(1)
 
 fpga_con = borph.RHINO()
