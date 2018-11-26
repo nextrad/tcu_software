@@ -85,7 +85,7 @@ class TCUController(harpoon.Project):
         self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
 
         self.logger.info('starting.bof...')
-        self.fpga_con.launch_bof(self.bof_exe, link=True)
+        self.fpga_con.launch_bof(self.bof_exe, link=False)
 
     def stop(self):
         self.logger.info('stopping .bof...')
