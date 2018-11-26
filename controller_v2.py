@@ -63,7 +63,7 @@ class TCUController(harpoon.Project):
         try:
             self.fpga_con.connect()
         except Exception as e:
-            self.logger.error('failed to connect to tcu')
+            self.logger.exception('failed to connect to tcu')
             sys.exit(66)
         self.logger.info('connection successful!')
 
@@ -72,20 +72,20 @@ class TCUController(harpoon.Project):
         try:
             self.fpga_con.disconnect()
         except Exception as e:
-            self.logger.error('failed to disconnect from tcu')
+            self.logger.exception('failed to disconnect from tcu')
             sys.exit(66)
         self.logger.info('disconnect successful!')
 
     def start(self):
-        self.logger.info('powering fmc0...')
-        self.fpga_con._action('echo 102 > /sys/class/gpio/export')
-        self.fpga_con._action('echo out > /sys/class/gpio/gpio102/direction')
-        self.fpga_con._action('echo 1 > /sys/class/gpio/gpio102/value')
-        self.fpga_con._action('echo out > /sys/class/gpio/gpio100/direction')
-        self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
+        # self.logger.info('powering fmc0...')
+        # self.fpga_con._action('echo 102 > /sys/class/gpio/export')
+        # self.fpga_con._action('echo out > /sys/class/gpio/gpio102/direction')
+        # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio102/value')
+        # self.fpga_con._action('echo out > /sys/class/gpio/gpio100/direction')
+        # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
 
         self.logger.info('starting.bof...')
-        self.fpga_con.launch_bof(self.bof_exe, link=False)
+        self.fpga_con.launch_bof(self.bof_exe, link=True)
 
     def stop(self):
         self.logger.info('stopping .bof...')
@@ -323,6 +323,7 @@ if __name__ == '__main__':
                         cores=[core_tcu],
                         fpga_con=fpga_con,
                         bof_exe=args.bof,
+                        headerfile=args.file,
                         debug=args.debug,
                         log_dir=args.logdir)
 
