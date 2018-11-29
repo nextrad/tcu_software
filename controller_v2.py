@@ -264,7 +264,7 @@ class TCUMonitorForm(npyscreen.Form):
     def create(self):
         self.count = 0
         self.keypress_timeout = 10  # refresh period in 100ms (10 = 1s)
-        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=True, value='xxx.xxx.xxx.xxx')
+        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=False, value='xxx.xxx.xxx.xxx')
         self.text_connection = self.add(npyscreen.TitleText, name='Connection', editable=False, value='?')
         self.text_state = self.add(npyscreen.TitleText, name='State', editable=False, value='?')
         self.text_num_pulses = self.add(npyscreen.TitleText, name='Pulses', editable=False, value='?')
@@ -291,8 +291,15 @@ class TCUMonitorForm(npyscreen.Form):
 
     def while_waiting(self):
         # called every keypress_timeout period when user not interacting
-        self.text_address.value = str(self.count)
-        self.count = self.count + 1
+        self.text_address.value = str(tcu.address)
+        self.text_state.value = str(reg_status.read())
+        self.text_num_pulses.value = str(reg_num_pulses.read())
+        self.text_num_repeats.value = str(reg_num_repeats.read())
+        self.text_pre_pulse.value = str(reg_pre_pulse.read())
+        self.text_x_amp_delay.value = str(reg_x_amp_delay.read())
+        self.text_l_amp_delay.value = str(reg_l_amp_delay.read())
+        self.text_rex_delay.value = str(reg_rex_delay.read())
+        self.display()
 
 
 class TCUMonitorApplication(npyscreen.NPSAppManaged):
@@ -344,8 +351,8 @@ if __name__ == '__main__':
         tcu.disconnect()
 
     if args.monitor is True:
-        # tcu.connect()
-        # tcu.start()
+        tcu.connect()
+        tcu.start()
         app = TCUMonitorApplication()
         app.run()
 
