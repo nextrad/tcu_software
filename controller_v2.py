@@ -21,7 +21,7 @@ class TCUController(harpoon.Project):
                  cores=list(),
                  address='192.168.1.36',
                  headerfile='PulseParameters.ini',
-                 bof_exe='tcu_v2-1_internal_clk.bof',
+                 bof_exe='tcu_v2-1-3.bof',
                  debug=False,
                  log_dir=''
                  ):
@@ -62,7 +62,7 @@ class TCUController(harpoon.Project):
         self.logger.info('initializing rhino connection, IP address: ' + self.address)
         try:
             self.fpga_con.connect()
-            time.sleep(3)
+            # time.sleep(3)
             self.power_fmc()
         except Exception as e:
             self.logger.exception('failed to connect to tcu')
@@ -81,7 +81,7 @@ class TCUController(harpoon.Project):
     def power_fmc(self):
         self.logger.debug('calling power_fmc.sh script...')
         fpga_con._action('./power_fmc.sh')
-        time.sleep(3)
+        # time.sleep(3)
         # self.fpga_con._action('echo 102 > /sys/class/gpio/export')
         # self.fpga_con._action('echo out > /sys/class/gpio/gpio102/direction')
         # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio102/value')
@@ -188,7 +188,7 @@ class TCUController(harpoon.Project):
     def arm(self):
         self.logger.info('arming tcu...')
         reg_instruction.write(0)
-        time.sleep(3)
+        # time.sleep(3)
         reg_instruction.write(1)
 
 fpga_con = borph.RHINO()
@@ -319,6 +319,8 @@ if __name__ == '__main__':
                         type=int, default=30)
     parser.add_argument('-d', '--debug', help='display debug messages to STDOUT',
                         action='store_true', default=False)
+    parser.add_argument('-c', '--check_regs', help='verify registers after writing',
+                        action='store_true', default=False)
     parser.add_argument('-l', '--logdir', help='directory to store log file '
                         '[\'/tmp/\']', default='/tmp/')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
@@ -346,7 +348,8 @@ if __name__ == '__main__':
         tcu.connect()
         tcu.start()
         tcu.write_registers()
-        tcu.verify_registers()
+        if args.check_regs is True:
+            tcu.verify_registers()
         tcu.arm()
         tcu.disconnect()
 
