@@ -524,34 +524,37 @@
        </item>
        <item row="3" column="1">
         <widget class="QComboBox" name="combo_mode">
+         <property name="toolTip">
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Polarization Mode&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;mode num&lt;/span&gt;: &lt;span style=&quot; font-style:italic;&quot;&gt;freq. band &lt;/span&gt;[&lt;span style=&quot; font-style:italic;&quot;&gt;t&lt;/span&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;x pol&lt;/span&gt; - &lt;span style=&quot; font-style:italic;&quot;&gt;rx pol&lt;/span&gt;]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         </property>
          <item>
           <property name="text">
-           <string>0: L-VV</string>
+           <string>0: L [V-V]</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>1: L-VH</string>
+           <string>1: L [V-H]</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>2: L-HV</string>
+           <string>2: L [H-V]</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>3: L-HH</string>
+           <string>3: L [H-H]</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>4: X-HV/H</string>
+           <string>4: X [V-H/V]</string>
           </property>
          </item>
          <item>
           <property name="text">
-           <string>5: X-VV/H</string>
+           <string>5: X [H-H/V]</string>
           </property>
          </item>
         </widget>
@@ -598,7 +601,7 @@
      <x>0</x>
      <y>0</y>
      <width>672</width>
-     <height>27</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
