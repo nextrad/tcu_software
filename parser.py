@@ -8,7 +8,7 @@ class HeaderFileParser(object):
     """NeXtRAD.ini File Parser"""
     def __init__(self, file_name=''):
         self.logger = logging.getLogger('header_file_parser_logger')
-        self.file_parser = configparser.ConfigParser()
+        self.file_parser = configparser.ConfigParser(comment_prefixes='/', allow_no_value=True)
         self.file_parser.optionxform = str  # retain upper case for keys
         self.file_parser['PulseParameters'] = {'WAVEFORM_INDEX': '0',
                                                'NUM_PRIS': '0',
@@ -127,10 +127,11 @@ class HeaderFileParser(object):
     def write_header(self, file_name):
         """ writes tcu params to header file """
         with open(file_name, 'w') as configfile:
-            configfile.write('# Intermediary ini file for TCU\n')
-            configfile.write('[PulseParameters]\n')
-            for key in self.file_parser['PulseParameters']:
-                configfile.write(key + ' = ' + self.file_parser['PulseParameters'][key]+'\n')
+            self.file_parser.write(configfile)
+            # configfile.write('# Intermediary ini file for TCU\n')
+            # configfile.write('[PulseParameters]\n')
+            # for key in self.file_parser['PulseParameters']:
+            #     configfile.write(key + ' = ' + self.file_parser['PulseParameters'][key]+'\n')
 
     def set_tcu_params(self, params):
         """ sets parser with given parameters
