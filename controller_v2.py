@@ -107,7 +107,7 @@ class TCUController(harpoon.Project):
         print('patterns = {patterns}'.format(patterns=', '.join(patterns)))
         self.event_handler = FileEventHandler(self.logger, patterns=patterns)
         self.observer = Observer()
-        self.observer.schedule(self.event_handler, watched_dir, recursive=True)
+        self.observer.schedule(self.event_handler, watched_dir, recursive=False)
         self.observer.start()
 
     def connect(self):
