@@ -30,6 +30,7 @@ class TCUController(harpoon.Project):
                  cores=list(),
                  address=None,
                  headerfile=None,
+                 verify=False,
                  bof_exe=None,
                  debug=False,
                  log_dir=str(),
@@ -38,7 +39,7 @@ class TCUController(harpoon.Project):
                  ):
         """creates a new instance of TCUController
 
-        :param harpoon.FPGAConnection: Class to fascilitate the low level communication between PC and TCU
+        :param harpoon.FPGAConnection: Class to facilitate the low level communication between PC and TCU
         :param str name: name of the project
         :param str description: description of the project
         :param list cores: harpoon.cores associated to this project
@@ -56,6 +57,7 @@ class TCUController(harpoon.Project):
         self.fpga_con = fpga_con
         self.address = address
         self.headerfile = headerfile
+        self.verify = verify
         self.bof_exe = bof_exe
         self.auto_arm = auto_arm
         if self.auto_arm:
@@ -164,87 +166,109 @@ class TCUController(harpoon.Project):
         self.logger.debug('Extracted parameters from header:\n' + str(self.tcu_params))
 
     def write_registers(self):
-        if fpga_con.check_ssh_connection():
-            self.logger.info('writing registers...')
-            params = self.tcu_params.get_int_params()
-            reg_num_repeats.write(params['num_repeats'])
-            reg_num_pulses.write(params['num_pulses'])
-            reg_x_amp_delay.write(params['x_amp_delay'])
-            reg_l_amp_delay.write(params['l_amp_delay'])
-            reg_rex_delay.write(params['rex_delay'])
-            reg_pri_pulse_width.write(params['pri_pulse_width'])
-            reg_pre_pulse.write(params['pre_pulse'])
+        if fpga_con.ssh_connected():
+            if fpga_con.running():
+                self.logger.info('writing registers...')
+                params = self.tcu_params.get_int_params()
+                reg_num_repeats.write(params['num_repeats'])
+                reg_num_pulses.write(params['num_pulses'])
+                reg_x_amp_delay.write(params['x_amp_delay'])
+                reg_l_amp_delay.write(params['l_amp_delay'])
+                reg_rex_delay.write(params['rex_delay'])
+                reg_pri_pulse_width.write(params['pri_pulse_width'])
+                reg_pre_pulse.write(params['pre_pulse'])
 
-            # need to do a bit more work for reg_pulses,
-            # as it is a more complex data structure
-            hex_params = self.tcu_params.get_hex_params()
-            pulses = hex_params['pulses']
-            pulse_param_str = str()
-            for pulse in pulses:
-                pulse_param_str += pulse['pulse_width'].replace('\\x', '') + pulse['pri'].replace('\\x', '') + pulse['pol_mode'].replace('\\x', '') + pulse['frequency'].replace('\\x', '')
-            pulse_param_bytearray = bytearray.fromhex(pulse_param_str)
-            reg_pulses.write_bytes(pulse_param_bytearray, raw=True)
-        else:
-            self.logger.error('No ssh connection to TCU, cannot perform register writes.')
+                # need to do a bit more work for reg_pulses,
+                # as it is a more complex data structure
+                hex_params = self.tcu_params.get_hex_params()
+                pulses = hex_params['pulses']
+                pulse_param_str = str()
+                for pulse in pulses:
+                    pulse_param_str += pulse['pulse_width'].replace('\\x', '') \
+                                       + pulse['pri'].replace('\\x', '') \
+                                       + pulse['pol_mode'].replace('\\x', '') \
+                                       + pulse['frequency'].replace('\\x', '')
 
-    def verify_registers(self):
-        if fpga_con.check_ssh_connection():
-            self.logger.info('verifying registers...')
-            params = self.tcu_params.get_int_params()
-            register_value_correct = True
-            if self._verify_register(reg_num_repeats, params['num_repeats']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_num_pulses, params['num_pulses']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_x_amp_delay, params['x_amp_delay']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_l_amp_delay, params['l_amp_delay']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_rex_delay, params['rex_delay']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_pri_pulse_width, params['pri_pulse_width']) == False:
-                register_value_correct = False
-            if self._verify_register(reg_pre_pulse, params['pre_pulse']) == False:
-                register_value_correct = False
+                pulse_param_bytearray = bytearray.fromhex(pulse_param_str)
+                reg_pulses.write_bytes(pulse_param_bytearray, raw=True)
 
-            # need to do a bit more work for reg_pulses,
-            # as it is a more complex data structure
-            hex_params = self.tcu_params.get_hex_params(hdl_format=True)
-            pulses = hex_params['pulses']
-            pulse_param_str = str()
-            for pulse in pulses:
-                pulse_param_str += pulse['pulse_width'].replace('\"', '') + pulse['pri'].replace('\"', '') + pulse['pol_mode'].replace('\"', '') + pulse['frequency'].replace('\"', '')
-            pulse_param_str = pulse_param_str.replace('x', '')
-
-            num_pulses = reg_num_pulses.read()
-            read_value = reg_pulses.read_bytes()[0:(10*num_pulses)]
-            read_value_str= str()
-            self.logger.warning('Due to python version mismatches, verifying pulses register has been disabled')
-            # for pulse_index in range(num_pulses):
-            #     # print('pulse[{}]'.format(pulse_index))
-            #     pulse_width = read_value[pulse_index*10 + 0:pulse_index*10+ 2]
-            #     # print('pw {}'.format(pulse_width.hex()))
-            #     pri = read_value[pulse_index*10 + 4:pulse_index*10+ 6] + read_value[pulse_index*10 + 2:pulse_index*10+ 4]
-            #     # print('pri {}'.format(pri.hex()))
-            #     mode = read_value[pulse_index*10 + 6:pulse_index*10+ 8]
-            #     # print('mode {}'.format(mode.hex()))
-            #     freq = read_value[pulse_index*10 + 8:pulse_index*10+ 10]
-            #     # print('freq {}'.format(freq.hex()))
-            #     read_value_str += pulse_width.hex() + pri.hex() + mode.hex() + freq.hex()
-            # if read_value_str == pulse_param_str:
-            #     self.logger.debug('Register \'{}\' verified'.format('pulses'))
-            # else:
-            #     self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format('pulses', read_value_str, pulse_param_str))
-            #     register_value_correct = False
-
-            if register_value_correct:
-                self.logger.info('All registers have been verified')
+                self.logger.debug('registers written')
+                if self.verify:
+                    self.logger.debug('checking registers...')
+                    self.check_regs()
             else:
-                self.logger.error('One or more registers contain incorrect value(s) - see {} for details'.format(self.log_dir+'tcu_'+self.fpga_con.address+'.log'))
-        else:
-            self.logger.error('No ssh connection to TCU, cannot perform register writes.')
+                self.logger.error('No bof running, cannot perform register writes. Use tcu.start() method.')
 
-    def _verify_register(self, register, expected_value):
+        else:
+            self.logger.error('No ssh connection to TCU, cannot perform register writes. Use tcu.connect() method')
+
+    def check_regs(self):
+        """reads back the TCU registers and compares them with the parameters sent"""
+        if fpga_con.ssh_connected():
+            if fpga_con.running():
+                self.logger.info('verifying registers...')
+                params = self.tcu_params.get_int_params()
+                register_value_correct = True
+                if self.check_reg(reg_num_repeats, params['num_repeats']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_num_pulses, params['num_pulses']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_x_amp_delay, params['x_amp_delay']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_l_amp_delay, params['l_amp_delay']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_rex_delay, params['rex_delay']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_pri_pulse_width, params['pri_pulse_width']) == False:
+                    register_value_correct = False
+                if self.check_reg(reg_pre_pulse, params['pre_pulse']) == False:
+                    register_value_correct = False
+
+                # need to do a bit more work for reg_pulses,
+                # as it is a more complex data structure
+                hex_params = self.tcu_params.get_hex_params(hdl_format=True)
+                pulses = hex_params['pulses']
+                pulse_param_str = str()
+                for pulse in pulses:
+                    pulse_param_str += pulse['pulse_width'].replace('\"', '') + pulse['pri'].replace('\"', '') + pulse['pol_mode'].replace('\"', '') + pulse['frequency'].replace('\"', '')
+                pulse_param_str = pulse_param_str.replace('x', '')
+
+                num_pulses = reg_num_pulses.read()
+                read_value = reg_pulses.read_bytes()[0:(10*num_pulses)]
+                read_value_str = str()
+
+                if sys.version_info >= (3, 6):
+                    for pulse_index in range(num_pulses):
+                        # print('pulse[{}]'.format(pulse_index))
+                        pulse_width = read_value[pulse_index*10 + 0:pulse_index*10 + 2]
+                        # print('pw {}'.format(pulse_width.hex()))
+                        pri = read_value[pulse_index*10 + 4:pulse_index*10 + 6] + read_value[pulse_index*10 + 2:pulse_index*10 + 4]
+                        # print('pri {}'.format(pri.hex()))
+                        mode = read_value[pulse_index*10 + 6:pulse_index*10 + 8]
+                        # print('mode {}'.format(mode.hex()))
+                        freq = read_value[pulse_index*10 + 8:pulse_index*10 + 10]
+                        # print('freq {}'.format(freq.hex()))
+                        read_value_str += pulse_width.hex() + pri.hex() + mode.hex() + freq.hex()
+                    if read_value_str == pulse_param_str:
+                        self.logger.debug('Register \'{}\' verified'.format('pulses'))
+                    else:
+                        self.logger.error('Value mismatch for register \'{}\' retrieved {}, expected {}'.format('pulses', read_value_str, pulse_param_str))
+                        register_value_correct = False
+                else:
+                    self.logger.warning('cannot verify the pulses register. needs Python >= 3.6')
+
+                if register_value_correct:
+                    self.logger.debug('All registers have been verified')
+                else:
+                    self.logger.error('One or more registers contain incorrect value(s) - see {} for details'.format(self.log_dir+'tcu_'+self.fpga_con.address+'.log'))
+            else:
+                self.logger.error('No bof running, cannot perform register reads. Use tcu.start() method.')
+
+        else:
+            self.logger.error('No ssh connection to TCU, cannot perform register reads. Use tcu.connect() method.')
+
+    def check_reg(self, register, expected_value):
+        """returns True if the contents of given register matches a given value"""
         read_value = register.read()
         if read_value == expected_value:
             self.logger.debug('Register \'{}\' verified'.format(register.name))
