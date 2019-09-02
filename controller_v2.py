@@ -118,12 +118,10 @@ class TCUController(harpoon.Project):
             try:
                 self.fpga_con.connect()
                 self.is_connected = True
-                # time.sleep(3)
                 self.power_fmc()
+                self.logger.info('connection successful!')
             except Exception as e:
                 self.logger.exception('failed to connect to tcu')
-                sys.exit(66)
-            self.logger.info('connection successful!')
         else:
             self.logger.error('IP address not set, cannot connect.')
 
@@ -131,10 +129,9 @@ class TCUController(harpoon.Project):
         self.logger.info('disconnecting from tcu...')
         try:
             self.fpga_con.disconnect()
+            self.logger.info('disconnect successful!')
         except Exception as e:
             self.logger.exception('failed to disconnect from tcu')
-            sys.exit(66)
-        self.logger.info('disconnect successful!')
 
     def power_fmc(self):
         self.logger.debug('calling power_fmc.sh script...')
