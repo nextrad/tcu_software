@@ -3,7 +3,7 @@ import os.path
 import argparse
 import time
 import logging
-# import npyscreen
+import npyscreen
 
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -391,56 +391,71 @@ class ControllerGUI(Ui_MainWindow):
     def refresh(self):
         print('refreshing')
 
-#
-# class TCUMonitorForm(npyscreen.Form):
-#
-#     def afterEditing(self):
-#         self.parentApp.setNextForm(None)
-#
-#     def create(self):
-#         self.count = 0
-#         self.keypress_timeout = 10  # refresh period in 100ms (10 = 1s)
-#         self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=False, value='xxx.xxx.xxx.xxx')
-#         self.text_connection = self.add(npyscreen.TitleText, name='Connection', editable=False, value='?')
-#         self.text_state = self.add(npyscreen.TitleText, name='State', editable=False, value='?')
-#         self.text_num_pulses = self.add(npyscreen.TitleText, name='Pulses', editable=False, value='?')
-#         self.text_num_repeats = self.add(npyscreen.TitleText, name='Repeats', editable=False, value='?')
-#         self.text_pre_pulse = self.add(npyscreen.TitleText, name='Pre Pulse', editable=False, value='?')
-#         self.text_x_amp_delay = self.add(npyscreen.TitleText, name='X Amp Delay', editable=False, value='?')
-#         self.text_l_amp_delay = self.add(npyscreen.TitleText, name='L Amp Delay', editable=False, value='?')
-#         self.text_rex_delay = self.add(npyscreen.TitleText, name='Rex Delay', editable=False, value='?')
-#         self.grid_pulses = self.add(npyscreen.GridColTitles, name='Pulses', editable=False, column_width=10, height=7, max_height=10)
-#         self.grid_pulses.col_titles =[ 'Pulse', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
-#         self.grid_pulses.values = [
-#                                     ['0', '10.0', '1000', '0', '1300'],
-#                                     ['1', '10.0', '1000', '1', '1300'],
-#                                     ['2', '10.0', '1000', '2', '1300'],
-#                                     ['3', '10.0', '1000', '3', '1300'],
-#                                     ['4', '10.0', '1000', '4', '8500'],
-#                                     ['5', '10.0', '1000', '5', '8500'],
-#                                   ]
-#         # self.button_arm = self.add(npyscreen.ButtonPress, name='Arm')
-#         # self.button_arm.whenPressed = self.when_pressed_arm
-#
-#     def when_pressed_arm(self):
-#         self.button_arm.name = 'disarm'
-#
-#     def while_waiting(self):
-#         # called every keypress_timeout period when user not interacting
-#         self.text_address.value = str(tcu.address)
-#         self.text_state.value = str(reg_status.read())
-#         self.text_num_pulses.value = str(reg_num_pulses.read())
-#         self.text_num_repeats.value = str(reg_num_repeats.read())
-#         self.text_pre_pulse.value = str(reg_pre_pulse.read())
-#         self.text_x_amp_delay.value = str(reg_x_amp_delay.read())
-#         self.text_l_amp_delay.value = str(reg_l_amp_delay.read())
-#         self.text_rex_delay.value = str(reg_rex_delay.read())
-#         self.display()
-#
-#
-# class TCUMonitorApplication(npyscreen.NPSAppManaged):
-#     def onStart(self):
-#         self.addForm('MAIN', TCUMonitorForm, name='TCU MONITOR')
+
+class TCUMonitorForm(npyscreen.Form):
+
+    def afterEditing(self):
+        self.parentApp.setNextForm(None)
+
+    def create(self):
+        self.count = 0
+        self.keypress_timeout = 10  # refresh period in 100ms (10 = 1s)
+        self.text_address = self.add(npyscreen.TitleText, name='IP Address', editable=False, value='xxx.xxx.xxx.xxx')
+        self.text_connection = self.add(npyscreen.TitleText, name='Connection', editable=False, value='?')
+        self.text_state = self.add(npyscreen.TitleText, name='State', editable=False, value='?')
+        self.text_num_pulses = self.add(npyscreen.TitleText, name='Pulses', editable=False, value='?')
+        self.text_num_repeats = self.add(npyscreen.TitleText, name='Repeats', editable=False, value='?')
+        self.text_pre_pulse = self.add(npyscreen.TitleText, name='Pre Pulse', editable=False, value='?')
+        self.text_x_amp_delay = self.add(npyscreen.TitleText, name='X Amp Delay', editable=False, value='?')
+        self.text_l_amp_delay = self.add(npyscreen.TitleText, name='L Amp Delay', editable=False, value='?')
+        self.text_rex_delay = self.add(npyscreen.TitleText, name='Rex Delay', editable=False, value='?')
+        # self.grid_pulses = self.add(npyscreen.GridColTitles, name='Pulses', editable=False, column_width=10, height=7, max_height=10)
+        # self.grid_pulses.col_titles =[ 'Pulse', 'Pulse Width', 'PRI', 'Mode', 'Frequency']
+        # self.grid_pulses.values = [
+        #                             ['0', '10.0', '1000', '0', '1300'],
+        #                             ['1', '10.0', '1000', '1', '1300'],
+        #                             ['2', '10.0', '1000', '2', '1300'],
+        #                             ['3', '10.0', '1000', '3', '1300'],
+        #                             ['4', '10.0', '1000', '4', '8500'],
+        #                             ['5', '10.0', '1000', '5', '8500'],
+        #                           ]
+        self.button_arm = self.add(npyscreen.ButtonPress, name='Arm')
+        self.button_arm.whenPressed = self.when_pressed_arm
+
+    def when_pressed_arm(self):
+        pass
+        # self.button_arm.name = 'disarm'
+
+    def while_waiting(self):
+        # called every keypress_timeout period when user not interacting
+        self.text_address.value = str(tcu.address)
+        state = reg_status.read()
+        if state == 0:
+            self.text_state.value = 'IDLE'
+        elif state == 1:
+            self.text_state.value = 'ARMED'
+        elif state == 2:
+            self.text_state.value = 'RUNNING'
+        elif state == 3:
+            self.text_state.value = 'DONE'
+        else:
+            self.text_state.value = '???'
+        if self.text_state.value == 1 or self.text_state.value == 2:
+            self.button_arm.name = 'disarm'
+        else:
+            self.button_arm.name = 'arm'
+        self.text_num_pulses.value = str(reg_num_pulses.read())
+        self.text_num_repeats.value = str(reg_num_repeats.read())
+        self.text_pre_pulse.value = str(reg_pre_pulse.read())
+        self.text_x_amp_delay.value = str(reg_x_amp_delay.read())
+        self.text_l_amp_delay.value = str(reg_l_amp_delay.read())
+        self.text_rex_delay.value = str(reg_rex_delay.read())
+        self.display()
+
+
+class TCUMonitorApplication(npyscreen.NPSAppManaged):
+    def onStart(self):
+        self.addForm('MAIN', TCUMonitorForm, name='TCU MONITOR')
 
 
 if __name__ == '__main__':
@@ -462,12 +477,12 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--auto_arm', help='automatically update registers '
                         'AND arm the TCU when header file has changed',
                         action='store_true', default=False)
-    # parser.add_argument('-c', '--check_regs', help='verify registers after writing',
-    #                     action='store_true', default=False)
+    parser.add_argument('-c', '--check_regs', help='verify registers after writing',
+                        action='store_true', default=False)
     parser.add_argument('-l', '--logdir', help='directory to store log file '
                         '[\'/tmp/\']', default='/tmp/')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
-    # parser.add_argument('-m', '--monitor', action="store_true", default=False)
+    parser.add_argument('-m', '--monitor', action="store_true", default=False)
     parser.add_argument('-k', '--kill', help='kill running .bof',
                         action="store_true", default=False)
     parser.add_argument('-i', '--init', help='automatically connect and initialize '
@@ -485,26 +500,21 @@ if __name__ == '__main__':
                         address=args.address,
                         bof_exe=args.bof,
                         headerfile=args.file,
+                        verify=args.check_regs,
                         debug=args.debug,
                         log_dir=args.logdir,
                         auto_update=args.auto_update,
                         auto_arm=args.auto_arm)
 
     if args.init is True:
-        tcu.parse_header()
         tcu.connect()
         tcu.start()
-        tcu.write_registers()
-        if args.check_regs is True:
-            tcu.verify_registers()
-        tcu.arm()
-        tcu.disconnect()
 
-    # if args.monitor is True:
-    #     tcu.connect()
-    #     tcu.start()
-    #     app = TCUMonitorApplication()
-    #     app.run()
+    if args.monitor is True:
+        tcu.connect()
+        tcu.start()
+        app = TCUMonitorApplication()
+        app.run()
 
     if args.gui is True:
         app = QtWidgets.QApplication(sys.argv)
