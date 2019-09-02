@@ -35,7 +35,8 @@ class TCUController(harpoon.Project):
                  debug=False,
                  log_dir=str(),
                  auto_update=False,
-                 auto_arm=False
+                 auto_arm=False,
+                 voice=False
                  ):
         """creates a new instance of TCUController
 
@@ -50,6 +51,7 @@ class TCUController(harpoon.Project):
         :param str log_dir: path to store log file
         :param bool auto_update: automatically update registers when header file has changed
         :param bool auto_arm: automatically update registers AND arm the TCU when header file has changed
+        :param bool voice: voice prompts
         """
 
         harpoon.Project.__init__(self, name, description, cores)
@@ -64,6 +66,7 @@ class TCUController(harpoon.Project):
             self.auto_update = True
         else:
             self.auto_update = auto_update
+        self.voice = voice
 
         self.is_connected = False
         self.is_running = False
@@ -76,6 +79,7 @@ class TCUController(harpoon.Project):
         self.logger.debug('\tbof_exe = {}'.format(self.bof_exe))
         self.logger.debug('\tauto_arm = {}'.format(self.auto_arm))
         self.logger.debug('\tauto_update = {}'.format(self.auto_update))
+        self.logger.debug('\tvoice = {}'.format(self.voice))
 
         self.init_headerfile_thread()
 
@@ -120,6 +124,8 @@ class TCUController(harpoon.Project):
                 self.is_connected = True
                 self.power_fmc()
                 self.logger.info('connection successful!')
+                if self.voice:
+                    os.system('spd-say -t female1 -i -0 "connected" -r -30 -p -30')
             except Exception as e:
                 self.logger.exception('failed to connect to tcu')
         else:
@@ -288,6 +294,8 @@ class TCUController(harpoon.Project):
                 reg_instruction.write(0)
                 # time.sleep(3)
                 reg_instruction.write(1)
+                if self.voice:
+                    os.system('spd-say -t female1 -i -0 "armed" -r -30 -p -30')
             else:
                 self.logger.error('No bof running TCU, cannot arm TCU. Use tcu.start() method.')
 
@@ -305,6 +313,8 @@ class FileEventHandler(PatternMatchingEventHandler):
         super(FileEventHandler, self).on_modified(event)
         self.logger.info('headerfile changed')
         if tcu.auto_update:
+            if tcu.voice:
+                os.system('spd-say -t female1 -i -30 "updated" -r -30')
             tcu.parse_header()
             tcu.write_registers()
             if tcu.auto_arm:
@@ -477,6 +487,8 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--auto_arm', help='automatically update registers '
                         'AND arm the TCU when header file has changed',
                         action='store_true', default=False)
+    parser.add_argument('-v', '--voice', help='enable voice prompts',
+                        action='store_true', default=False)
     parser.add_argument('-c', '--check_regs', help='verify registers after writing',
                         action='store_true', default=False)
     parser.add_argument('-l', '--logdir', help='directory to store log file '
@@ -504,7 +516,9 @@ if __name__ == '__main__':
                         debug=args.debug,
                         log_dir=args.logdir,
                         auto_update=args.auto_update,
-                        auto_arm=args.auto_arm)
+                        auto_arm=args.auto_arm,
+                        voice=args.voice
+                        )
 
     if args.init is True:
         tcu.connect()
