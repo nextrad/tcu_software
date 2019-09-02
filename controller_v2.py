@@ -144,18 +144,23 @@ class TCUController(harpoon.Project):
         # self.fpga_con._action('echo 1 > /sys/class/gpio/gpio100/value')
 
     def start(self):
-        if self.is_connected:
-            self.logger.info('starting.bof...')
+        if fpga_con.ssh_connected():
+            self.logger.info('starting bof...')
             self.fpga_con.launch_bof(self.bof_exe, link=True)
+            if self.fpga_con.running():
+                self.logger.info('bof started!')
+            else:
+                self.logger.error('failed to start bof \'{}\' on TCU \'{}\', please check log file \'{}\''
+                                  .format(self.bof_exe,self.address, self.log_dir+'tcu_'+self.fpga_con.address+'.log'))
         else:
-            self.logger.error('cannot start bof without connection, connect to TCU first')
+            self.logger.error('cannot start bof without connection, connect to TCU first. Use tcu.connect() method.')
 
     def stop(self):
-        if self.is_connected:
+        if fpga_con.ssh_connected():
             self.logger.info('stopping .bof...')
             self.fpga_con.kill_bof()
         else:
-            self.logger.error('cannot kill bof without connection, connect to TCU first')
+            self.logger.error('cannot kill bof without connection, connect to TCU first. Use tcu.connect() method')
 
     def parse_header(self):
         self.logger.info('parsing header file...')
@@ -276,13 +281,18 @@ class TCUController(harpoon.Project):
             return False
 
     def arm(self):
-        if fpga_con.check_ssh_connection():
-            self.logger.info('arming tcu...')
-            reg_instruction.write(0)
-            # time.sleep(3)
-            reg_instruction.write(1)
+        """arms the TCU"""
+        if fpga_con.ssh_connected():
+            if fpga_con.running():
+                self.logger.info('arming tcu...')
+                reg_instruction.write(0)
+                # time.sleep(3)
+                reg_instruction.write(1)
+            else:
+                self.logger.error('No bof running TCU, cannot arm TCU. Use tcu.start() method.')
+
         else:
-            self.logger.error('No ssh connection to TCU, cannot arm TCU.')
+            self.logger.error('No ssh connection to TCU, cannot arm TCU. Use tcu.connect() method.')
 
 
 class FileEventHandler(PatternMatchingEventHandler):
