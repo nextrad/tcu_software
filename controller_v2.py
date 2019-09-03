@@ -107,14 +107,17 @@ class TCUController(harpoon.Project):
         self.logger.addHandler(ch)
 
     def init_headerfile_thread(self):
-        watched_dir = os.path.split(self.headerfile)[0]  # os.path.split() returns tuple (path, filename)
-        print('watched_dir = {watched_dir}'.format(watched_dir=watched_dir))
-        patterns = [self.headerfile]
-        print('patterns = {patterns}'.format(patterns=', '.join(patterns)))
-        self.event_handler = FileEventHandler(self.logger, patterns=patterns)
-        self.observer = Observer()
-        self.observer.schedule(self.event_handler, watched_dir, recursive=False)
-        self.observer.start()
+        if self.headerfile is not None:
+            watched_dir = os.path.split(self.headerfile)[0]  # os.path.split() returns tuple (path, filename)
+            print('watched_dir = {watched_dir}'.format(watched_dir=watched_dir))
+            patterns = [self.headerfile]
+            print('patterns = {patterns}'.format(patterns=', '.join(patterns)))
+            self.event_handler = FileEventHandler(self.logger, patterns=patterns)
+            self.observer = Observer()
+            self.observer.schedule(self.event_handler, watched_dir, recursive=False)
+            self.observer.start()
+        else:
+            self.logger.warn('no headerfile path given, cannot start headerfile monitor')
 
     def connect(self):
         if self.address is not None:
@@ -473,7 +476,7 @@ if __name__ == '__main__':
                                      description='Controller script for '
                                                  'NeXtRAD\'s Timing Control Unit')
     parser.add_argument('address', help='IP address of TCU')
-    parser.add_argument('-f', '--file', help="header file", default='~/test.ini')
+    parser.add_argument('-f', '--file', help="header file")
     parser.add_argument('-b', '--bof', help='name of .bof file to be executed '
                         'on RHINO [\'tcu_v2.bof\']', default='tcu_v2.bof')
     parser.add_argument('-t', '--timeout', help='login timeout (seconds) to '
