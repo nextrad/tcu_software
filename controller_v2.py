@@ -490,7 +490,7 @@ if __name__ == '__main__':
                                      description='Controller script for '
                                                  'NeXtRAD\'s Timing Control Unit')
     parser.add_argument('address', help='IP address of TCU')
-    parser.add_argument('-f', '--file', help="header file")
+    parser.add_argument('-f', '--file', help="header file containing experiment parameters")
     parser.add_argument('-b', '--bof', help='name of .bof file to be executed '
                         'on RHINO [\'tcu_v2.bof\']', default='tcu_v2.bof')
     parser.add_argument('-t', '--timeout', help='login timeout (seconds) to '
@@ -507,7 +507,7 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--retry_connect', help='continuously retries to '
                         'connect to TCU',
                         action='store_true', default=False)
-    parser.add_argument('-d', '--retry_delay', help='delay in seconds between '
+    parser.add_argument('-w', '--retry_delay', help='delay in seconds between '
                         'connection retries [3]',
                         type=int, default=3)
     parser.add_argument('-v', '--voice', help='enable voice prompts',
