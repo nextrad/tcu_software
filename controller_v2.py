@@ -36,6 +36,8 @@ class TCUController(harpoon.Project):
                  log_dir=str(),
                  auto_update=False,
                  auto_arm=False,
+                 retry_connect=False,
+                 retry_delay=3,
                  voice=False
                  ):
         """creates a new instance of TCUController
@@ -51,6 +53,8 @@ class TCUController(harpoon.Project):
         :param str log_dir: path to store log file
         :param bool auto_update: automatically update registers when header file has changed
         :param bool auto_arm: automatically update registers AND arm the TCU when header file has changed
+        :param bool retry_connect: continuously retries to connect to TCU
+        :param int retry_delay: delay in seconds between connection retries
         :param bool voice: voice prompts
         """
 
@@ -66,6 +70,8 @@ class TCUController(harpoon.Project):
             self.auto_update = True
         else:
             self.auto_update = auto_update
+        self.retry_connect = retry_connect
+        self.retry_delay = retry_delay
         self.voice = voice
 
         self.is_connected = False
@@ -131,8 +137,16 @@ class TCUController(harpoon.Project):
                     os.system('spd-say -t female1 -i -0 "connected" -r -30 -p -30')
             except Exception as e:
                 self.logger.exception('failed to connect to tcu')
+                if self.retry_connect:
+                    self.logger.debug('attempting to reconnect in {} seconds.'.format(self.retry_delay))
+                    time.sleep(self.retry_delay)
+                    self.connect()
         else:
             self.logger.error('IP address not set, cannot connect.')
+            if self.retry_connect:
+                self.logger.debug('attempting to reconnect in {} seconds.'.format(self.retry_delay))
+                time.sleep(self.retry_delay)
+                self.connect()
 
     def disconnect(self):
         self.logger.info('disconnecting from tcu...')
@@ -490,6 +504,12 @@ if __name__ == '__main__':
     parser.add_argument('-a', '--auto_arm', help='automatically update registers '
                         'AND arm the TCU when header file has changed',
                         action='store_true', default=False)
+    parser.add_argument('-r', '--retry_connect', help='continuously retries to '
+                        'connect to TCU',
+                        action='store_true', default=False)
+    parser.add_argument('-d', '--retry_delay', help='delay in seconds between '
+                        'connection retries [3]',
+                        type=int, default=3)
     parser.add_argument('-v', '--voice', help='enable voice prompts',
                         action='store_true', default=False)
     parser.add_argument('-c', '--check_regs', help='verify registers after writing',
@@ -520,6 +540,8 @@ if __name__ == '__main__':
                         log_dir=args.logdir,
                         auto_update=args.auto_update,
                         auto_arm=args.auto_arm,
+                        retry_connect=args.retry_connect,
+                        retry_delay=args.retry_delay,
                         voice=args.voice
                         )
 
