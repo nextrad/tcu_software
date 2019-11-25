@@ -367,6 +367,9 @@ reg_l_amp_delay = harpoon.Register('l_amp_delay',
 reg_rex_delay = harpoon.Register('rex_delay',
                                  'Delay for REX to output RF after PRI signal',
                                  int, 2, 3, core_tcu)
+reg_trig_delay = harpoon.Register('trig_delay',
+                                 'Start delay after trigger in signal',
+                                 int, 2, 3, core_tcu)
 reg_pri_pulse_width = harpoon.Register('pri_pulse_width',
                                        'Pulse width of PRI signal',
                                        int, 4, 3, core_tcu)
@@ -389,6 +392,7 @@ registers = [
             reg_x_amp_delay,
             reg_l_amp_delay,
             reg_rex_delay,
+            reg_trig_delay,
             reg_pri_pulse_width,
             reg_pre_pulse,
             reg_status,
