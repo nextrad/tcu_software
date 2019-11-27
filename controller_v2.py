@@ -319,6 +319,39 @@ class TCUController(harpoon.Project):
         else:
             self.logger.error('No ssh connection to TCU, cannot arm TCU. Use tcu.connect() method.')
 
+    def disarm(self):
+        """
+            disarms the TCU
+
+            this will only work when the RHINO is in ARMed state,
+            use tcu.abort() for halting an already running experiment.
+        """
+        if fpga_con.ssh_connected():
+            if fpga_con.running():
+                self.logger.info('disarming tcu...')
+                reg_instruction.write(0)
+                # time.sleep(3)
+                reg_instruction.write(1)
+                if self.voice:
+                    os.system('spd-say -t female1 -i -0 "disarmed" -r -30 -p -30')
+            else:
+                self.logger.error('No bof running TCU, cannot disarm TCU.')
+
+        else:
+            self.logger.error('No ssh connection to TCU, cannot disarm TCU. Use tcu.connect() method.')
+
+    def abort(self):
+        """aborts running experiment"""
+        if fpga_con.ssh_connected():
+            if fpga_con.running():
+                self.logger.info('aborting experiment...')
+                reg_num_repeats.write(0)
+                if self.voice:
+                    os.system('spd-say -t female1 -i -0 "aborted" -r -30 -p -30')
+            else:
+                self.logger.error('No bof running TCU, nothing to abort.')
+        else:
+            self.logger.error('No ssh connection to TCU, cannot abort experiment. Use tcu.connect() method.')
 
 class FileEventHandler(PatternMatchingEventHandler):
     """Overriding PatternMatchingEventHandler to handle when headerfile changes."""
@@ -522,6 +555,8 @@ if __name__ == '__main__':
                         '[\'/tmp/\']', default='/tmp/')
     parser.add_argument('-g', '--gui', action="store_true", default=False)
     parser.add_argument('-m', '--monitor', action="store_true", default=False)
+    parser.add_argument('-e', '--end', help='abort running experiment',
+                        action="store_true", default=False)
     parser.add_argument('-k', '--kill', help='kill running .bof',
                         action="store_true", default=False)
     parser.add_argument('-i', '--init', help='automatically connect and initialize '
@@ -548,6 +583,18 @@ if __name__ == '__main__':
                         retry_delay=args.retry_delay,
                         voice=args.voice
                         )
+
+    if args.kill is True:
+        tcu.connect()
+        tcu.start() # link to already running bof
+        tcu.stop()
+        tcu.disconnect()
+
+    if args.end is True:
+        tcu.connect()
+        tcu.start() # link to already running bof
+        tcu.abort()
+        tcu.disconnect()
 
     if args.init is True:
         tcu.connect()
