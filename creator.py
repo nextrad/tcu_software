@@ -18,7 +18,7 @@ import datetime
 from creator_gui import Ui_MainWindow
 from parser import TCUParams
 
-VERSION = '1.1.0'
+VERSION = '1.2.0'
 class Creator(Ui_MainWindow):
     """docstring for TCUPulseParamsGUILogic."""
 
@@ -39,6 +39,10 @@ class Creator(Ui_MainWindow):
         self.button_edit_pulse.clicked.connect(self.edit_pulse)
         self.button_edit_pulse.clicked.connect(self.update_metadata)
         self.button_remove_pulse.clicked.connect(self.remove_pulse)
+        self.button_more_params.clicked.connect(self.toggle_params)
+        self.display_more_pulses = True
+        self.toggle_params()
+
         # self.spin_num_pulses.valueChanged.connect(self.update_table)
         # self.spin_num_pulses.valueChanged.connect(self.update_metadata)
         self.spin_num_repeats.valueChanged.connect(self.update_metadata)
@@ -261,6 +265,45 @@ class Creator(Ui_MainWindow):
             self.lcdNumber_time.display('large')
         self.lcdNumber_size.display(str(experiment_megabytes))
 
+    def toggle_params(self):
+        if self.display_more_pulses:
+            self.display_more_pulses = False
+            self.button_more_params.setText('Show More')
+            self.label_clk_period.setProperty("visible", False)
+            self.spin_clk_period.setProperty("visible", False)
+            self.label_pri_pulse_width.setProperty("visible", False)
+            self.spin_pri_pulse_width.setProperty("visible", False)
+            self.label_prepulse.setProperty("visible", False)
+            self.spin_prepulse.setProperty("visible", False)
+            self.label_x_amp_delay.setProperty("visible", False)
+            self.spin_x_amp_delay.setProperty("visible", False)
+            self.label_l_amp_delay.setProperty("visible", False)
+            self.spin_l_amp_delay.setProperty("visible", False)
+            self.label_rex_delay.setProperty("visible", False)
+            self.spin_rex_delay.setProperty("visible", False)
+            self.label_dac_delay.setProperty("visible", False)
+            self.spin_dac_delay.setProperty("visible", False)
+            self.label_adc_delay.setProperty("visible", False)
+            self.spin_adc_delay.setProperty("visible", False)
+        else:
+            self.display_more_pulses = True
+            self.button_more_params.setText('Show Less')
+            self.label_clk_period.setProperty("visible", True)
+            self.spin_clk_period.setProperty("visible", True)
+            self.label_pri_pulse_width.setProperty("visible", True)
+            self.spin_pri_pulse_width.setProperty("visible", True)
+            self.label_prepulse.setProperty("visible", True)
+            self.spin_prepulse.setProperty("visible", True)
+            self.label_x_amp_delay.setProperty("visible", True)
+            self.spin_x_amp_delay.setProperty("visible", True)
+            self.label_l_amp_delay.setProperty("visible", True)
+            self.spin_l_amp_delay.setProperty("visible", True)
+            self.label_rex_delay.setProperty("visible", True)
+            self.spin_rex_delay.setProperty("visible", True)
+            self.label_dac_delay.setProperty("visible", True)
+            self.spin_dac_delay.setProperty("visible", True)
+            self.label_adc_delay.setProperty("visible", True)
+            self.spin_adc_delay.setProperty("visible", True)
 
 if __name__ == '__main__':
 
