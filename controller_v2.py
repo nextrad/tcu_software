@@ -330,8 +330,6 @@ class TCUController(harpoon.Project):
             if fpga_con.running():
                 self.logger.info('disarming tcu...')
                 reg_instruction.write(0)
-                # time.sleep(3)
-                reg_instruction.write(1)
                 if self.voice:
                     os.system('spd-say -t female1 -i -0 "disarmed" -r -30 -p -30')
             else:
