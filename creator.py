@@ -18,7 +18,7 @@ import datetime
 from creator_gui import Ui_MainWindow
 from parser import TCUParams
 
-VERSION = '1.2.0'
+VERSION = '1.2.1'
 class Creator(Ui_MainWindow):
     """docstring for TCUPulseParamsGUILogic."""
 
@@ -94,17 +94,10 @@ class Creator(Ui_MainWindow):
         filename = self._get_filename_from_dialog()
 
     def display_help(self):
-        self.instructions_window = QtWidgets.QMainWindow()
-        widget = QtWidgets.QWidget(self.instructions_window)
-        gridlayout = QtWidgets.QGridLayout()
-        widget.setLayout(gridlayout)
-        widget.setWindowTitle('Instructions')
-        gridlayout.addWidget(QtWidgets.QLabel(widget, text='https://github.com/nextrad/tcu_software'))
-        self.instructions_window.show()
-
+        QMessageBox.about(self.main_window, 'Instructions', 'see README at https://github.com/nextrad/tcu_software')
 
     def display_about(self):
-        QMessageBox.about(self.main_window, 'About', 'TCU Parameter Editor\nv1.1.0\nBrad Kahn')
+        QMessageBox.about(self.main_window, 'About', 'TCU Parameter Editor\nv{}\nBrad Kahn'.format(VERSION))
 
     def export(self):
         # TODO: verify captured datatypes are ints / doubles
